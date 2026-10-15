@@ -1438,12 +1438,9 @@
     return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
   }
 
-  // Shows with a known air date come first, soonest first; shows with
-  // no date yet fall to the end, alphabetically among themselves.
-  // Up to date shelf ordering: soonest known next air date first; among
-  // shows with no next date yet, most recently aired episode first, so a
-  // show with a long gap since its last season sinks toward the bottom
-  // instead of sitting wherever its title happens to fall alphabetically.
+  // Up to date shelf ordering: shows with a known upcoming episode or
+  // season date come first, soonest first. Everything without a date
+  // follows in plain alphabetical order.
   function byUpcomingDate(a, b){
     if(a.nextSeasonDate && b.nextSeasonDate){
       if(a.nextSeasonDate !== b.nextSeasonDate) return a.nextSeasonDate < b.nextSeasonDate ? -1 : 1;
@@ -1451,13 +1448,6 @@
     }
     if(a.nextSeasonDate && !b.nextSeasonDate) return -1;
     if(!a.nextSeasonDate && b.nextSeasonDate) return 1;
-    var da = mostRecentAiredDate(a), db = mostRecentAiredDate(b);
-    if(da && db){
-      if(da !== db) return da > db ? -1 : 1;
-      return byTitle(a, b);
-    }
-    if(da && !db) return -1;
-    if(!da && db) return 1;
     return byTitle(a, b);
   }
 
@@ -1982,10 +1972,18 @@
       show.resumeSeason = resume.season;
       show.resumeEpisode = resume.episode;
       autofillNextSeasonDate(show);
+      settleUpToDateAgainstShowStatus(show, false);
     } else {
       show.completed = false;
       show.completedStatus = null;
       show.caughtUp = false;
+      // Sitting on the last episode of a season with another one already
+      // out: move to the next season's first episode.
+      var seasonLen = show.episodesPerSeason && show.episodesPerSeason[season];
+      if(seasonLen && episode >= seasonLen){
+        show.season = season + 1;
+        show.episode = 1;
+      }
     }
   }
 
@@ -2077,6 +2075,10 @@
       show.resumeSeason = resume.season;
       show.resumeEpisode = resume.episode;
       autofillNextSeasonDate(show);
+      // Caught up on a show TVMaze doesn't list as Running (To Be
+      // Determined, Ended, etc.) with nothing further scheduled: that's
+      // finished, so it goes to Completed rather than Up to date.
+      settleUpToDateAgainstShowStatus(show, true);
     }
     saveShows();
     render();
@@ -2105,8 +2107,27 @@
   // already non-Running (or re-matching one that turns out to be) routes
   // it straight to Completed instead, rather than sitting in Up to date
   // forever with no way to actually air a resume episode.
+  // True when TVMaze already lists an episode after the person's current
+  // position that hasn't dropped yet. A caught-up show with one of those
+  // stays in Up to date even if its status isn't Running, since something
+  // is genuinely on the way.
+  function hasUpcomingEpisodeAfterPosition(show){
+    if(!show.episodeAirDates) return false;
+    var curS = show.season || 1, curE = show.episode || 1;
+    return Object.keys(show.episodeAirDates).some(function(key){
+      var m = /^S(\d+)E(\d+)$/.exec(key);
+      if(!m) return false;
+      var s = parseInt(m[1], 10), e = parseInt(m[2], 10);
+      var ahead = s > curS || (s === curS && e > curE);
+      return ahead && !hasDropped(show, key);
+    });
+  }
+
+  // Returns true if the show was moved to Completed.
   function settleUpToDateAgainstShowStatus(show, notify){
-    if(!show.caughtUp || !show.showStatus || show.showStatus === 'Running') return;
+    if(!show.caughtUp || !show.showStatus || show.showStatus === 'Running') return false;
+    if(show.rewatchInProgress) return false;
+    if(hasUpcomingEpisodeAfterPosition(show)) return false;
     show.caughtUp = false;
     show.completed = true;
     show.completedStatus = 'finished';
@@ -2114,8 +2135,22 @@
     show.resumeEpisode = null;
     show.nextSeasonDate = null;
     if(notify){
-      addBannerItem(show.title + ' is ' + show.showStatus + ' on TVMaze \u2014 added to Completed instead of Up to date');
+      addBannerItem(show.title + ' is ' + show.showStatus + ' on TVMaze \u2014 moved to Completed');
     }
+    return true;
+  }
+
+  // Launch sweep using whatever status is already stored, so a caught-up
+  // show that's sitting at To Be Determined (or Ended etc.) moves to
+  // Completed even before the TVMaze refresh runs, or when offline.
+  function sweepNonRunningUpToDate(){
+    var changed = false;
+    shows.forEach(function(s){
+      if(s.completed || s.upcoming || !s.started) return;
+      if(settleUpToDateAgainstShowStatus(s, true)) changed = true;
+    });
+    if(changed) saveShows(true);
+    return changed;
   }
 
   function stopWatching(show){
@@ -3430,6 +3465,8 @@
       var hadDateBefore = !!show.nextSeasonDate;
       var priorSeason = show.season;
       var priorEpisode = show.episode;
+      var priorTotalSeasons = show.totalSeasons;
+      var priorPerSeason = show.episodesPerSeason;
 
       fetch('https://api.tvmaze.com/shows/' + show.tvmazeId + '?embed=episodes')
         .then(function(r){ return r.ok ? r.json() : null; })
@@ -3475,7 +3512,18 @@
           if(wasCompletedFinished && oldStatus && oldStatus !== 'Running' && show.showStatus === 'Running'){
             show.completed = false;
             show.completedStatus = null;
-            settleShowAtPosition(show, priorSeason, priorEpisode);
+            // A finished show was watched through everything that existed
+            // before this refresh, so settle at that last episode (shows
+            // added straight to Completed are stored at S1E1).
+            var renewSeason = priorSeason || 1, renewEpisode = priorEpisode || 1;
+            if(priorTotalSeasons && priorPerSeason && priorPerSeason[priorTotalSeasons]){
+              var lastS = priorTotalSeasons, lastE = priorPerSeason[priorTotalSeasons];
+              if(lastS > renewSeason || (lastS === renewSeason && lastE > renewEpisode)){
+                renewSeason = lastS;
+                renewEpisode = lastE;
+              }
+            }
+            settleShowAtPosition(show, renewSeason, renewEpisode);
             addBannerItem(show.title + ' has been renewed \u2014 moved to ' +
               (show.caughtUp ? 'Up to Date' : 'Currently Watching'));
             transitioned = true;
@@ -3489,11 +3537,11 @@
           // is left alone here \u2014 it only completes once the person
           // actually reaches the final episode (the existing Mark watched
           // logic already handles that correctly on its own).
-          if(!transitioned && wasCaughtUp && oldStatus === 'Running' && show.showStatus && show.showStatus !== 'Running'){
-            show.completed = true;
-            show.completedStatus = 'finished';
-            show.caughtUp = false;
-            addBannerItem(show.title + ' is no longer Running (' + show.showStatus + ') — moved to Completed');
+          // This used to fire only when the status CHANGED away from
+          // Running during a refresh, so a show already sitting at To Be
+          // Determined stayed in Up to date forever. It now applies to any
+          // caught-up show that isn't Running and has nothing scheduled.
+          if(!transitioned && show.caughtUp && settleUpToDateAgainstShowStatus(show, true)){
             transitioned = true;
           }
 
@@ -3531,6 +3579,7 @@
     if(launchChecksDone) return;
     launchChecksDone = true;
     var promoted = checkAutoPromotions();
+    if(sweepNonRunningUpToDate()) promoted = true;
     scanEpisodesAiredToday();
     scanUpcomingReleased();
     if(promoted) scheduleUiRefresh();
