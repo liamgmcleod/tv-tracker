@@ -1,0 +1,4556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watchlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg: #EFEDE6;
+    --surface: #FFFFFF;
+    --surface-alt: #E4E1D8;
+    --text: #201D18;
+    --text-muted: #6C685F;
+    --accent: #B5701F;
+    --accent-soft: #B5701F1A;
+    --accent-2: #2E7D76;
+    --danger: #A8434A;
+    --danger-soft: #A8434A15;
+    --border: #D9D5C9;
+    --shadow: 0 1px 2px rgba(30,25,15,0.06);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg: #14171B;
+      --surface: #1D2126;
+      --surface-alt: #262B31;
+      --text: #EDEAE2;
+      --text-muted: #9A968C;
+      --accent: #E8A33D;
+      --accent-soft: #E8A33D22;
+      --accent-2: #59B0A8;
+      --danger: #D3767A;
+      --danger-soft: #D3767A20;
+      --border: #32373E;
+      --shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #14171B;
+    --surface: #1D2126;
+    --surface-alt: #262B31;
+    --text: #EDEAE2;
+    --text-muted: #9A968C;
+    --accent: #E8A33D;
+    --accent-soft: #E8A33D22;
+    --accent-2: #59B0A8;
+    --danger: #D3767A;
+    --danger-soft: #D3767A20;
+    --border: #32373E;
+    --shadow: 0 1px 3px rgba(0,0,0,0.35);
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    transition: background 0.2s ease;
+  }
+
+  .wrap{
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 48px 40px 96px;
+  }
+
+  header.top{
+    margin-bottom: 40px;
+  }
+
+  .home-title{
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .top-row{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  h1{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 2.4rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+
+  .stat-line{
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  button{
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .header-actions{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-small{
+    padding: 9px 12px;
+    font-size: 0.82rem;
+  }
+
+  .add-btn{
+    background: var(--accent);
+    color: #1A1400;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+  }
+  .add-btn:hover{ filter: brightness(1.06); }
+
+  /* Add-show panel */
+  .add-panel{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    display: none;
+  }
+  .add-panel.open{ display: block; }
+
+  .field-row{
+    display: grid;
+    grid-template-columns: 2fr 1.3fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .field-row.thirds{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  label{
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+
+  input[type="text"], input[type="number"], input[type="password"], select{
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 9px 10px;
+    font-size: 0.92rem;
+    font-family: inherit;
+  }
+  input:focus, select:focus, button:focus-visible{
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .panel-actions{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .btn-plain{
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+  }
+  .btn-primary{
+    background: var(--accent);
+    border: none;
+    color: #1A1400;
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  /* Shelves */
+  .shelf{
+    margin-top: 32px;
+  }
+  .shelf-head{
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-left: 14px;
+    border-left: 4px solid var(--platform-color, var(--accent));
+    margin-bottom: 12px;
+  }
+  .shelf-head h2{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 1.3rem;
+    margin: 0;
+  }
+  .shelf-count{
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .home-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  /* Pinned "Other" box: sits alone on its own row, centered under the
+     3x3 grid of the nine core boxes above it. */
+  .home-box-other{
+    grid-column: 2;
+  }
+
+  .home-box{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 20px;
+    text-align: left;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--platform-color, var(--accent));
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  .home-box:hover{
+    filter: brightness(1.04);
+    border-color: var(--accent);
+  }
+  .home-box h2{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    margin: 0 0 4px;
+  }
+  .home-box .home-box-count{
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 640px){
+    .home-grid{ grid-template-columns: repeat(2, 1fr); }
+    .home-box-other{ grid-column: auto; }
+  }
+  @media (max-width: 420px){
+    .home-grid{ grid-template-columns: 1fr; }
+    .home-box-other{ grid-column: auto; }
+  }
+
+  .back-btn{
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+  .back-btn:hover{
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .show-row{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+
+  .show-title-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .show-title{
+    font-size: 0.98rem;
+    font-weight: 500;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .show-controls{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .position-chip{
+    display: inline-flex;
+    align-items: baseline;
+    background: var(--surface-alt);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .position-of{
+    margin-left: 0.4em;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .group-divider{
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin: 10px 2px 8px;
+  }
+
+  .show-row.caught-up{
+    opacity: 0.82;
+  }
+
+  .field-pill{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    flex: 0 0 auto;
+  }
+  .field-pill label{
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .field-pill input[type="date"]{
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--text);
+    width: auto;
+    color-scheme: light dark;
+  }
+
+  .search-input{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    width: 180px;
+    max-width: 100%;
+  }
+
+  .status-radio-group{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .status-radio{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 12px;
+    cursor: pointer;
+  }
+  .status-radio input{
+    accent-color: var(--accent);
+    margin: 0;
+  }
+  .status-radio:has(input:checked){
+    color: var(--text);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .checkbox-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .checkbox-row input{
+    width: 15px;
+    height: 15px;
+    accent-color: var(--accent);
+  }
+
+  .calendar-overlay{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+    z-index: 20;
+  }
+  .calendar-overlay.open{ display: flex; }
+
+  .calendar-panel{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 780px;
+    box-shadow: var(--shadow);
+    box-sizing: border-box;
+  }
+
+  .calendar-header{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .calendar-header h2{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 1.2rem;
+    margin: 0;
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .calendar-weekdays{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .calendar-weekdays span{
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    padding: 4px 0;
+  }
+
+  .calendar-grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day{
+    min-height: 76px;
+    max-height: 160px;
+    min-width: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px;
+    background: var(--bg);
+    cursor: pointer;
+  }
+  .cal-day:hover{
+    border-color: var(--accent);
+  }
+  .cal-day.selected{
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .cal-day.outside{
+    opacity: 0.4;
+  }
+  .cal-day.today{
+    border-color: var(--accent);
+  }
+  .cal-day-num{
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+  .cal-event{
+    font-size: 0.66rem;
+    line-height: 1.3;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .calendar-note{
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 14px 2px 2px;
+  }
+
+  .cal-day-panel{
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .cal-day-panel h3{
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+  .cal-add-row{
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .cal-add-row select{
+    flex: 1 1 200px;
+  }
+  .cal-repeat-wrap{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .cal-repeat-input{
+    width: 44px;
+    padding: 5px 6px;
+    font-size: 0.82rem;
+  }
+  .cal-entry-list{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cal-entry-chip{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--surface-alt);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 0.85rem;
+  }
+  .cal-entry-chip button{
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    padding: 2px 6px;
+  }
+  .cal-entry-chip button:hover{
+    color: var(--danger);
+  }
+
+  @media (max-width: 480px){
+    .cal-day{ min-height: 58px; }
+    .cal-event{ font-size: 0.6rem; }
+  }
+
+  .status-badge-muted{
+    background: var(--surface-alt);
+    color: var(--text-muted);
+  }
+
+  .status-badge{
+    flex: 0 0 auto;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .status-btn{
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 7px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .status-btn:hover{
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+  .status-btn-primary{
+    background: var(--accent-soft);
+    border-color: transparent;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .status-btn-primary:hover{
+    filter: brightness(1.05);
+  }
+
+  .show-footer{
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .remove-btn{
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+    flex: 0 0 auto;
+  }
+  .remove-btn:hover{
+    color: var(--danger);
+    background: var(--danger-soft);
+  }
+
+  .status-badge-dnf{
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .edit-btn{
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    flex: 0 0 auto;
+  }
+  .edit-btn:hover{
+    color: var(--text);
+    border-color: var(--text-muted);
+  }
+
+  .shelf.completed-shelf .shelf-head{
+    border-left-color: var(--text-muted);
+  }
+  .completed-row .show-title{
+    opacity: 0.9;
+  }
+  .completed-platform-tag{
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background: var(--surface-alt);
+    padding: 4px 9px;
+    border-radius: 20px;
+    flex: 0 0 auto;
+  }
+
+  .move-back-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .move-back-row select{
+    width: auto;
+    flex: 1 1 160px;
+  }
+
+  .btn-plain:disabled{
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .undo-toast{
+    position: fixed;
+    left: 50%;
+    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 12px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: calc(100% - 32px);
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    padding: 10px 10px 10px 16px;
+    font-size: 0.88rem;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .undo-toast.show{
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+  }
+  .undo-toast-text{
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .undo-toast button{
+    flex: 0 0 auto;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .undo-toast{ transition: none; }
+  }
+
+  .notif-banner{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 20px;
+    margin-bottom: 24px;
+  }
+  .notif-banner-list{
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.88rem;
+    color: var(--text);
+  }
+  .notif-banner-item{
+    line-height: 1.4;
+  }
+  .notif-banner-close{
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 2px 4px;
+  }
+  .notif-banner-close:hover{
+    color: var(--text);
+  }
+
+  .lookup-row{
+    margin-bottom: 12px;
+  }
+  .lookup-btn{
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--accent);
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .lookup-btn:hover{
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .lookup-status{
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .lookup-results{
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .lookup-result{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .lookup-result:hover{
+    border-color: var(--accent);
+  }
+  .lookup-result-meta{
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+  .lookup-match{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+  .lookup-match button{
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-decoration: underline;
+  }
+  .episode-progress{
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    flex: 0 0 auto;
+  }
+  .watched-btn{
+    flex: 0 0 auto;
+    background: var(--accent);
+    border: none;
+    color: #1A1400;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 6px;
+  }
+  .watched-btn:hover{ filter: brightness(1.06); }
+
+  .sync-dot{
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: 1px;
+    background: var(--text-muted);
+  }
+  .sync-dot.ok{ background: var(--accent-2); }
+  .sync-dot.busy{ background: var(--accent); }
+  .sync-dot.error{ background: var(--danger); }
+  .sync-intro{
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 14px;
+  }
+  .sync-intro a{ color: var(--accent); }
+  .sync-status{
+    font-size: 0.88rem;
+    color: var(--text);
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+  .sync-status.error{ color: var(--danger); }
+
+  .empty-shelf{
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    padding: 14px 0 4px;
+  }
+
+  .empty-state{
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state h2{
+    font-family: "Fraunces", Georgia, serif;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+  }
+
+  @media (max-width: 480px){
+    .wrap{ padding: 32px 16px 80px; }
+    h1{ font-size: 2rem; }
+    .field-row{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="home-title">
+      <h1>TV TRACKER</h1>
+      <div class="stat-line" id="statLine">Loading&hellip;</div>
+    </div>
+    <div class="top-row">
+      <div class="header-actions">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search your shows&hellip;">
+        <button class="btn-plain btn-small" id="undoBtn" disabled title="Nothing to undo">Undo</button>
+        <button class="btn-plain btn-small" id="upcomingBtn">Upcoming</button>
+        <button class="btn-plain btn-small" id="exportBtn">Export Data</button>
+        <button class="btn-plain btn-small" id="importBtn">Import Data</button>
+        <input type="file" id="importInput" accept="application/json" hidden>
+        <button class="btn-plain btn-small" id="syncBtn"><span class="sync-dot" id="syncDot"></span><span id="syncBtnLabel">Set Up Sync</span></button>
+        <button class="add-btn" id="openAddBtn">Add a Show</button>
+      </div>
+    </div>
+
+    <div class="add-panel" id="addPanel">
+      <div class="field-row">
+        <div>
+          <label for="titleInput">Show title</label>
+          <input type="text" id="titleInput" placeholder="e.g. Severance">
+        </div>
+        <div>
+          <label for="platformSelect">Platform</label>
+          <select id="platformSelect">
+            <option value="" disabled selected>Select a Platform&hellip;</option>
+            <option value="Apple TV+">Apple TV+</option>
+            <option value="Disney+ / Hulu">Disney+ / Hulu</option>
+            <option value="HBO">HBO</option>
+            <option value="Hayu">Hayu</option>
+            <option value="Netflix">Netflix</option>
+            <option value="Paramount+">Paramount+</option>
+            <option value="Prime Video">Prime Video</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="lookup-row" id="lookupRow">
+        <button type="button" class="lookup-btn" id="lookupBtn">Look Up on TVMaze</button>
+        <div id="lookupStatus"></div>
+        <div class="lookup-results" id="lookupResults" style="display:none;"></div>
+        <div class="lookup-match" id="lookupMatch" style="display:none;">
+          <span id="lookupMatchText"></span>
+          <button type="button" id="lookupChangeBtn">Change Match</button>
+        </div>
+      </div>
+      <div class="status-radio-group" id="statusRadioGroup">
+        <label class="status-radio">
+          <input type="radio" name="addStatus" value="watching" checked>
+          <span>Currently Watching</span>
+        </label>
+        <label class="status-radio">
+          <input type="radio" name="addStatus" value="upToDate">
+          <span>Up to Date</span>
+        </label>
+        <label class="status-radio">
+          <input type="radio" name="addStatus" value="notStarted">
+          <span>Haven't Started Yet</span>
+        </label>
+        <label class="status-radio">
+          <input type="radio" name="addStatus" value="upcoming">
+          <span>Upcoming Release</span>
+        </label>
+        <label class="status-radio">
+          <input type="radio" name="addStatus" value="completed">
+          <span>Completed / Cancelled</span>
+        </label>
+        <label class="status-radio">
+          <input type="radio" name="addStatus" value="dnf">
+          <span>DNF</span>
+        </label>
+      </div>
+      <div class="field-row thirds" id="seasonEpisodeRow">
+        <div>
+          <label for="seasonInput">Season you're on</label>
+          <input type="number" id="seasonInput" min="1" value="1">
+        </div>
+        <div>
+          <label for="episodeInput">Episode you're on</label>
+          <input type="number" id="episodeInput" min="1" value="1">
+        </div>
+      </div>
+      <div class="field-row" id="releaseDateRow" style="display:none;">
+        <div>
+          <label for="releaseDateInput">Release date</label>
+          <input type="date" id="releaseDateInput">
+        </div>
+        <div></div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn-plain" id="cancelAddBtn">Cancel</button>
+        <button class="btn-primary" id="submitAddBtn">Add Show</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="add-panel" id="syncPanel">
+    <div id="syncSetup">
+      <p class="sync-intro">Sync keeps this list identical on your Mac and phone through a private GitHub gist. Create a token at <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=TV%20Tracker%20sync" target="_blank" rel="noopener">github.com/settings/tokens</a> with only the <strong>gist</strong> box ticked, then paste it here. Do this once on each device with the same token.</p>
+      <div class="field-row">
+        <div>
+          <label for="syncTokenInput">GitHub token</label>
+          <input type="password" id="syncTokenInput" placeholder="ghp_&hellip;" autocomplete="off" spellcheck="false">
+        </div>
+        <div></div>
+      </div>
+    </div>
+    <p class="sync-status" id="syncStatusText"></p>
+    <div class="panel-actions">
+      <button class="btn-plain" id="syncCloseBtn">Close</button>
+      <button class="btn-plain" id="syncDisconnectBtn">Disconnect</button>
+      <button class="btn-primary" id="syncActionBtn">Connect</button>
+    </div>
+  </div>
+
+  <div class="notif-banner" id="notifBanner" style="display:none;">
+    <div class="notif-banner-list" id="notifBannerList"></div>
+    <button class="notif-banner-close" id="notifBannerClose" aria-label="Dismiss">&times;</button>
+  </div>
+
+  <main id="shelves"></main>
+
+  <div class="undo-toast" id="undoToast" role="status" aria-live="polite">
+    <span class="undo-toast-text" id="undoToastText"></span>
+    <button type="button" id="undoToastBtn">Undo</button>
+  </div>
+
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <h2>Nothing on the list yet</h2>
+    <p>Add a show above to start tracking what season and episode you're on.</p>
+  </div>
+
+  <div class="calendar-overlay" id="calendarOverlay">
+    <div class="calendar-panel">
+      <div class="calendar-header">
+        <button class="btn-plain btn-small" id="calPrevBtn" aria-label="Previous month">&larr;</button>
+        <h2 id="calMonthLabel">Month Year</h2>
+        <button class="btn-plain btn-small" id="calNextBtn" aria-label="Next month">&rarr;</button>
+        <button class="btn-plain btn-small" id="calCloseBtn">Close</button>
+      </div>
+      <div class="calendar-weekdays" id="calWeekdays"></div>
+      <div class="calendar-grid" id="calGrid"></div>
+      <div class="cal-day-panel" id="calDayPanel">
+        <p class="calendar-note">Click a day to add a show to it.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+(function(){
+  var STORAGE_KEY = 'tv-tracker-shows-v1';
+  var PLATFORM_COLORS = {
+    'Netflix': '#B5342E',
+    'Disney+ / Hulu': '#1666B0',
+    'HBO': '#6C4FCE',
+    'Prime Video': '#2E97C7',
+    'Apple TV+': '#5A5A5A',
+    'Paramount+': '#1A6FD1',
+    'Hayu': '#D6437A',
+    'Other': '#6B7A45'
+  };
+
+  // One-time migration for shows saved under retired platform names,
+  // so existing rows land in the right shelf under the new setup.
+  var PLATFORM_MIGRATIONS = {
+    'Hulu': 'Disney+ / Hulu',
+    'Disney+': 'Disney+ / Hulu',
+    'Max': 'HBO'
+  };
+  var FALLBACK_COLORS = ['#B5701F', '#2E7D76', '#8A5FC7', '#C4574A', '#4A8A5C'];
+
+  var shows = [];
+  // Transient UI state only (not saved): which caught-up shows currently
+  // have their air-date picker open for entry.
+  var pendingDateEntry = {};
+
+  // In-app notification banner: a simple session-only list of things that
+  // happened since the app last checked (never persisted, never a native
+  // OS notification, just a dismissible summary at the top of the page).
+  var bannerItems = [];
+  var bannerDismissed = false;
+
+  function addBannerItem(text){
+    bannerItems.push(text);
+    renderBanner();
+  }
+
+  function renderBanner(){
+    var banner = document.getElementById('notifBanner');
+    var list = document.getElementById('notifBannerList');
+    if(bannerDismissed || bannerItems.length === 0){
+      banner.style.display = 'none';
+      return;
+    }
+    list.innerHTML = '';
+    bannerItems.forEach(function(text){
+      var item = document.createElement('div');
+      item.className = 'notif-banner-item';
+      item.textContent = text;
+      list.appendChild(item);
+    });
+    banner.style.display = 'flex';
+  }
+
+  // ---- UK drop times ----
+  // Every date and time the tracker reasons about is UK time (Europe/London,
+  // which switches between GMT and BST on its own). TVMaze gives each
+  // episode an airdate/airtime in the network's own zone plus an exact
+  // airstamp; the raw values are kept in episodeAirInfo and turned into a
+  // UK drop moment per episode by applyDropRules(). episodeAirDates then
+  // holds the UK drop DATE and episodeDropTimes the exact drop moment (ms).
+  var UK_TZ = 'Europe/London';
+  var ukDateFmt = new Intl.DateTimeFormat('en-CA', { timeZone: UK_TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+  var ukTimeFmt = new Intl.DateTimeFormat('en-GB', { timeZone: UK_TZ, hour: '2-digit', minute: '2-digit', hour12: false });
+  var ukPartsFmt = new Intl.DateTimeFormat('en-GB', { timeZone: UK_TZ, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' });
+
+  function ukDateOf(ms){ return ukDateFmt.format(new Date(ms)); }
+  function ukTimeOf(ms){ return ukTimeFmt.format(new Date(ms)); }
+
+  // Converts a UK wall-clock time on a given date into an exact moment.
+  function ukWallTimeToMs(dateStr, hour, minute){
+    var p = dateStr.split('-').map(Number);
+    var guess = Date.UTC(p[0], p[1] - 1, p[2], hour, minute);
+    for(var i = 0; i < 2; i++){
+      var parts = {};
+      ukPartsFmt.formatToParts(new Date(guess)).forEach(function(x){ parts[x.type] = parseInt(x.value, 10); });
+      var asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour % 24, parts.minute);
+      var want = Date.UTC(p[0], p[1] - 1, p[2], hour, minute);
+      guess += (want - asUtc);
+    }
+    return guess;
+  }
+
+  function addDaysIso(dateStr, days){
+    var p = dateStr.split('-').map(Number);
+    var d = new Date(Date.UTC(p[0], p[1] - 1, p[2] + days));
+    return d.toISOString().slice(0, 10);
+  }
+
+  function todayIso(){ return ukDateOf(Date.now()); }
+
+  // Shows matched to Bravo on TVMaze reach Hayu 1-3 hours after the US
+  // broadcast, so their drop time is pushed back by the top of that window.
+  var BRAVO_HAYU_BUFFER_MS = 3 * 60 * 60 * 1000;
+  function isBravoShow(show){
+    return !!show && /^bravo$/i.test((show.network || '').trim());
+  }
+
+  // Every show drops at TVMaze's exact airstamp converted to UK time, plus
+  // the Hayu buffer for Bravo shows. Only falls back to UK midnight on the
+  // airdate when TVMaze has no timestamp for an episode.
+  function dropMomentFor(show, info){
+    if(!info) return null;
+    var t = null;
+    if(info.s){
+      t = Date.parse(info.s);
+      if(isNaN(t)) t = null;
+    }
+    if(t === null && info.d) t = ukWallTimeToMs(info.d, 0, 0);
+    if(t === null) return null;
+    if(isBravoShow(show)) t += BRAVO_HAYU_BUFFER_MS;
+    return t;
+  }
+
+  // Rebuilds episodeAirDates (UK drop dates) and episodeDropTimes from the
+  // raw TVMaze info. Cheap, so it runs on every save.
+  function applyDropRules(show){
+    if(!show || !show.episodeAirInfo) return;
+    var dates = {}, times = {};
+    Object.keys(show.episodeAirInfo).forEach(function(key){
+      var t = dropMomentFor(show, show.episodeAirInfo[key]);
+      if(t === null) return;
+      times[key] = t;
+      dates[key] = ukDateOf(t);
+    });
+    // A resume date that was auto-filled from the old US air date gets
+    // moved onto the UK drop date instead.
+    if(show.caughtUp && show.nextSeasonDate){
+      var rk = 'S' + (show.resumeSeason || ((show.season || 1) + 1)) + 'E' + (show.resumeEpisode || 1);
+      var ri = show.episodeAirInfo[rk];
+      if(ri && dates[rk] && (show.nextSeasonDate === ri.d || (show.episodeAirDates && show.nextSeasonDate === show.episodeAirDates[rk]))){
+        show.nextSeasonDate = dates[rk];
+      }
+    }
+    show.episodeAirDates = dates;
+    show.episodeDropTimes = times;
+  }
+
+  // True once an episode has actually dropped in the UK. Falls back to the
+  // plain date check for shows that don't have drop times yet.
+  function hasDropped(show, key){
+    if(show && show.episodeDropTimes && typeof show.episodeDropTimes[key] === 'number'){
+      return Date.now() >= show.episodeDropTimes[key];
+    }
+    var d = show && show.episodeAirDates && show.episodeAirDates[key];
+    return !!d && d <= todayIso();
+  }
+
+  // Collects raw per-episode timing from a TVMaze episode list.
+  function buildAirInfo(episodes){
+    var info = {};
+    episodes.forEach(function(ep){
+      if(!ep.season || !ep.number || !ep.airdate) return;
+      info['S' + ep.season + 'E' + ep.number] = { d: ep.airdate, s: ep.airstamp || null };
+    });
+    return info;
+  }
+
+  // Scans for episodes airing today on shows currently being watched (not
+  // upcoming, not caught up, not completed), that are ahead of where the
+  // person is up to, since those weren't there to see last time they opened
+  // the app.
+  function scanEpisodesAiredToday(){
+    var today = todayIso();
+    shows.forEach(function(s){
+      if(!s.started || s.caughtUp || s.upcoming || s.completed || !s.episodeAirDates) return;
+      Object.keys(s.episodeAirDates).forEach(function(key){
+        if(s.episodeAirDates[key] !== today || !hasDropped(s, key)) return;
+        var match = /^S(\d+)E(\d+)$/.exec(key);
+        if(!match) return;
+        var season = parseInt(match[1], 10), number = parseInt(match[2], 10);
+        if(season === s.season && number > s.episode){
+          addBannerItem(s.title + ' \u00b7 S' + season + 'E' + number + ' just aired');
+        }
+      });
+    });
+  }
+
+  // Scans for "Upcoming" shows whose release date has already passed, so
+  // the person knows to hit Start, since nothing else flags this.
+  function scanUpcomingReleased(){
+    var today = todayIso();
+    shows.forEach(function(s){
+      if(!s.upcoming || !s.releaseDate) return;
+      if(s.releaseDate <= today){
+        addBannerItem(s.title + ' is out now \u2014 hit Start when you\'re ready');
+      }
+    });
+  }
+
+  function normalizeShows(arr){
+    var changed = false;
+    arr.forEach(function(s){
+      if(PLATFORM_MIGRATIONS[s.platform]){
+        s.platform = PLATFORM_MIGRATIONS[s.platform];
+        changed = true;
+      }
+      if(typeof s.caughtUp !== 'boolean') s.caughtUp = false;
+      if(typeof s.lastMarkedWatchedAt === 'undefined') s.lastMarkedWatchedAt = null;
+      if(typeof s.nextSeasonDate === 'undefined') s.nextSeasonDate = null;
+      if(typeof s.resumeSeason === 'undefined') s.resumeSeason = null;
+      if(typeof s.resumeEpisode === 'undefined') s.resumeEpisode = null;
+      // midSeasonPause is retired: resumeSeason/resumeEpisode alone fully
+      // describe where a caught-up show resumes, whether that's the same
+      // season (a mid-season break) or the next one, so the separate flag
+      // and its dedicated "Pause mid-season" button are no longer needed.
+      if(typeof s.midSeasonPause !== 'undefined') delete s.midSeasonPause;
+      // Shows already caught up before resumeSeason/resumeEpisode existed
+      // used the old assumption: caught-up always means "next season, E1".
+      if(s.caughtUp && s.resumeSeason === null){
+        s.resumeSeason = (s.season || 1) + 1;
+        s.resumeEpisode = 1;
+      }
+      if(typeof s.started !== 'boolean') s.started = true;
+      if(typeof s.upcoming !== 'boolean') s.upcoming = false;
+      if(typeof s.releaseDate === 'undefined') s.releaseDate = null;
+      if(typeof s.completed !== 'boolean') s.completed = false;
+      if(typeof s.completedStatus === 'undefined') s.completedStatus = null;
+      if(typeof s.dnfSeason === 'undefined') s.dnfSeason = null;
+      if(typeof s.dnfEpisode === 'undefined') s.dnfEpisode = null;
+      if(typeof s.tvmazeId === 'undefined') s.tvmazeId = null;
+      if(typeof s.showStatus === 'undefined') s.showStatus = null;
+      if(typeof s.episodesPerSeason === 'undefined') s.episodesPerSeason = null;
+      if(typeof s.totalSeasons === 'undefined') s.totalSeasons = null;
+      if(typeof s.episodeAirDates === 'undefined') s.episodeAirDates = null;
+      if(typeof s.avgRuntimeMinutes === 'undefined') s.avgRuntimeMinutes = null;
+      if(typeof s.airDateOverrides === 'undefined') s.airDateOverrides = {};
+      if(typeof s.network === 'undefined') s.network = null;
+      if(typeof s.episodeAirInfo === 'undefined') s.episodeAirInfo = null;
+      if(typeof s.episodeDropTimes === 'undefined') s.episodeDropTimes = null;
+      applyDropRules(s);
+      if(typeof s.releaseDay !== 'undefined') delete s.releaseDay;
+      if(typeof s.episodeCount !== 'undefined') delete s.episodeCount;
+
+      // Rewatch tracking. rewatchInProgress + rewatchFrontierSeason/Episode
+      // together describe a live rewatch pass in progress (triggered either
+      // from a Completed show's "Rewatch" button or an Up to date show's
+      // "Log a rewatch"): the frontier is the last episode that existed the
+      // moment the pass began, so a season that airs mid-rewatch doesn't
+      // get swept into that pass's count. rewatchPassCounts records how
+      // many episodes each *completed* pass covered (kept per-pass since a
+      // live show's frontier can differ pass to pass), so the lifetime
+      // total sums correctly. rewatchStoppedSeason/Episode is separate from
+      // dnfSeason/dnfEpisode: it marks where a REWATCH was abandoned, and
+      // never overwrites the original watch-through's DNF/finished status.
+      if(typeof s.rewatchInProgress !== 'boolean') s.rewatchInProgress = false;
+      if(typeof s.rewatchFrontierSeason === 'undefined') s.rewatchFrontierSeason = null;
+      if(typeof s.rewatchFrontierEpisode === 'undefined') s.rewatchFrontierEpisode = null;
+      if(typeof s.rewatchPassCounts === 'undefined' || !Array.isArray(s.rewatchPassCounts)) s.rewatchPassCounts = [];
+      if(typeof s.rewatchStoppedSeason === 'undefined') s.rewatchStoppedSeason = null;
+      if(typeof s.rewatchStoppedEpisode === 'undefined') s.rewatchStoppedEpisode = null;
+      // Freezes what the lifetime episode total should credit for the
+      // ORIGINAL watch-through the moment a live rewatch begins, since
+      // season/episode get reused to track the rewatch's own progress
+      // (starting back at S1E1) for as long as it's in progress.
+      if(typeof s.originalWatchEpisodeCount === 'undefined') s.originalWatchEpisodeCount = null;
+
+      // Starting-point exclusion: only ever set going forward, at the
+      // moment a show is added starting mid-run (e.g. Real Housewives from
+      // a recent season). When set, episodes before this point are left
+      // out of the lifetime episode/hours total. Existing shows always
+      // default to null here, since this never applies retroactively.
+      if(typeof s.startingPointSeason === 'undefined') s.startingPointSeason = null;
+      if(typeof s.startingPointEpisode === 'undefined') s.startingPointEpisode = null;
+
+      if(!s.id) s.id = uid();
+    });
+    return changed;
+  }
+
+  function loadShows(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      shows = raw ? JSON.parse(raw) : [];
+    }catch(e){
+      shows = [];
+    }
+    if(normalizeShows(shows)) saveShows(true);
+  }
+
+  // Promotes any caught-up show whose air date has arrived to its resume
+  // point (usually next-season E1, but same-season for a mid-season
+  // pause). Returns true if anything changed so callers can re-render.
+  function checkAutoPromotions(){
+    var now = Date.now();
+    var changed = false;
+    shows.forEach(function(s){
+      if(s.caughtUp && s.nextSeasonDate){
+        // Start of the resume date in UK time, pushed back to the resume
+        // episode's actual drop moment when that's known.
+        var due = ukWallTimeToMs(s.nextSeasonDate, 0, 0);
+        var rKey = 'S' + (s.resumeSeason || ((s.season || 1) + 1)) + 'E' + (s.resumeEpisode || 1);
+        if(s.episodeDropTimes && typeof s.episodeDropTimes[rKey] === 'number'){
+          due = Math.max(due, s.episodeDropTimes[rKey]);
+        }
+        if(now >= due){
+          var newSeason = s.resumeSeason || ((s.season || 1) + 1);
+          var newEpisode = s.resumeEpisode || 1;
+          s.season = newSeason;
+          s.episode = newEpisode;
+          s.caughtUp = false;
+          s.nextSeasonDate = null;
+          s.resumeSeason = null;
+          s.resumeEpisode = null;
+          changed = true;
+          addBannerItem(s.title + ' \u00b7 S' + newSeason + 'E' + newEpisode + ' is out now');
+        }
+      }
+    });
+    if(changed) saveShows(true);
+    return changed;
+  }
+
+  // auto = true for saves the app makes on its own (TVMaze refresh, auto
+  // promotions). Those never become undo steps; only your own edits do.
+  function saveShows(auto){
+    shows.forEach(applyDropRules);
+    var syncChanged = trackShowChanges();
+    noteUndoChange(!!auto);
+    writeShowsToStorage();
+    if(syncChanged) scheduleSyncPush();
+  }
+
+  function writeShowsToStorage(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(shows));
+    }catch(e){
+      // storage unavailable; state still holds for this session
+    }
+  }
+
+  // Alphabetized list of preset platforms plus any custom platform names
+  // already in use, for pickers that need a full platform list.
+  function getKnownPlatforms(){
+    var set = {};
+    Object.keys(PLATFORM_COLORS).forEach(function(p){ set[p] = true; });
+    shows.forEach(function(s){ set[s.platform] = true; });
+    return Object.keys(set).sort(function(a, b){
+      return a.localeCompare(b, undefined, { sensitivity: 'base' });
+    });
+  }
+
+  function colorForPlatform(name, indexInOrder){
+    if(PLATFORM_COLORS[name]) return PLATFORM_COLORS[name];
+    return FALLBACK_COLORS[indexInOrder % FALLBACK_COLORS.length];
+  }
+
+  function uid(){
+    return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function byTitle(a, b){
+    return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+  }
+
+  // Shows with a known air date come first, soonest first; shows with
+  // no date yet fall to the end, alphabetically among themselves.
+  // Up to date shelf ordering: soonest known next air date first; among
+  // shows with no next date yet, most recently aired episode first, so a
+  // show with a long gap since its last season sinks toward the bottom
+  // instead of sitting wherever its title happens to fall alphabetically.
+  function byUpcomingDate(a, b){
+    if(a.nextSeasonDate && b.nextSeasonDate){
+      if(a.nextSeasonDate !== b.nextSeasonDate) return a.nextSeasonDate < b.nextSeasonDate ? -1 : 1;
+      return byTitle(a, b);
+    }
+    if(a.nextSeasonDate && !b.nextSeasonDate) return -1;
+    if(!a.nextSeasonDate && b.nextSeasonDate) return 1;
+    var da = mostRecentAiredDate(a), db = mostRecentAiredDate(b);
+    if(da && db){
+      if(da !== db) return da > db ? -1 : 1;
+      return byTitle(a, b);
+    }
+    if(da && !db) return -1;
+    if(!da && db) return 1;
+    return byTitle(a, b);
+  }
+
+  // Upcoming (not-yet-released) shows: soonest release date first, then
+  // undated ones alphabetically.
+  function byReleaseDate(a, b){
+    if(a.releaseDate && b.releaseDate){
+      if(a.releaseDate !== b.releaseDate) return a.releaseDate < b.releaseDate ? -1 : 1;
+      return byTitle(a, b);
+    }
+    if(a.releaseDate && !b.releaseDate) return -1;
+    if(!a.releaseDate && b.releaseDate) return 1;
+    return byTitle(a, b);
+  }
+
+  function matchesSearch(show, query){
+    if(!query) return true;
+    return show.title.toLowerCase().indexOf(query) !== -1 ||
+      show.platform.toLowerCase().indexOf(query) !== -1;
+  }
+
+  // Default runtime assumption (minutes) for shows with no TVMaze match,
+  // so they still contribute something to the hours-watched estimate
+  // rather than silently vanishing from the total.
+  var DEFAULT_RUNTIME_MINUTES = 45;
+
+  // Rough episode count for the ORIGINAL watch-through of one show (never
+  // includes rewatch passes \u2014 those are added separately in
+  // computeWatchStats). Sums full prior seasons when the season lengths
+  // are known (TVMaze match), then adds whatever's been reached in the
+  // current/final season. Respects a startingPointSeason/Episode exclusion
+  // when the show was added starting mid-run.
+  function episodesWatchedForShow(show){
+    if(!show.started || show.upcoming) return 0;
+
+    var season, episode;
+    if(show.completed){
+      if(show.completedStatus === 'dnf'){
+        season = show.dnfSeason || 1;
+        episode = show.dnfEpisode || 0;
+      } else if(show.episodesPerSeason && show.totalSeasons){
+        // Marked finished/cancelled with TVMaze data: count the whole
+        // known run.
+        season = show.totalSeasons;
+        episode = show.episodesPerSeason[show.totalSeasons] || 0;
+      } else {
+        // Manually added as completed with no episode data \u2014 no
+        // reliable way to estimate, so this show contributes nothing.
+        return 0;
+      }
+    } else if(show.rewatchInProgress){
+      // Season/episode currently track the REWATCH's own progress (it
+      // starts back at S1E1), not the original watch-through, so the
+      // original contribution is whatever was frozen the moment this pass
+      // began. The in-progress pass itself is added in computeWatchStats.
+      return show.originalWatchEpisodeCount || 0;
+    } else {
+      season = show.season || 1;
+      episode = show.episode || 0;
+    }
+
+    var startSeason = show.startingPointSeason || 1;
+    var startEpisode = show.startingPointSeason ? (show.startingPointEpisode || 1) : 1;
+
+    var total = 0;
+    if(show.episodesPerSeason){
+      for(var s = startSeason; s < season; s++){
+        var seasonLen = show.episodesPerSeason[s] || 0;
+        total += (s === startSeason) ? Math.max(0, seasonLen - (startEpisode - 1)) : seasonLen;
+      }
+      total += (season === startSeason) ? Math.max(0, episode - (startEpisode - 1)) : episode;
+    } else {
+      total = (season === startSeason) ? Math.max(0, episode - (startEpisode - 1)) : episode;
+    }
+    return total;
+  }
+
+  // Episodes contributed by rewatches: every completed pass's recorded
+  // count, plus (if a pass is currently underway) how far into that pass
+  // the person has gotten so far, counted from S1E1.
+  function rewatchEpisodesForShow(show){
+    var total = 0;
+    if(show.rewatchPassCounts && show.rewatchPassCounts.length){
+      for(var i = 0; i < show.rewatchPassCounts.length; i++) total += show.rewatchPassCounts[i] || 0;
+    }
+    if(show.rewatchInProgress){
+      var season = show.season || 1, episode = show.episode || 0;
+      var soFar = episode;
+      if(show.episodesPerSeason){
+        for(var s = 1; s < season; s++) soFar += show.episodesPerSeason[s] || 0;
+      }
+      total += soFar;
+    }
+    return total;
+  }
+
+  function computeWatchStats(){
+    var totalEpisodes = 0;
+    var totalMinutes = 0;
+    shows.forEach(function(show){
+      var eps = episodesWatchedForShow(show) + rewatchEpisodesForShow(show);
+      if(eps <= 0) return;
+      totalEpisodes += eps;
+      totalMinutes += eps * (show.avgRuntimeMinutes || DEFAULT_RUNTIME_MINUTES);
+    });
+    return { episodes: totalEpisodes, minutes: totalMinutes };
+  }
+
+  function formatWatchTime(totalMinutes){
+    var minutes = Math.round(totalMinutes) % 60;
+    var totalHours = Math.floor(totalMinutes / 60);
+    var hours = totalHours % 24;
+    var totalDays = Math.floor(totalHours / 24);
+    var days = totalDays % 30;
+    var totalMonths = Math.floor(totalDays / 30);
+    var months = totalMonths % 12;
+    var years = Math.floor(totalMonths / 12);
+
+    var parts = [];
+    if(years) parts.push(years + (years === 1 ? ' year' : ' years'));
+    if(months) parts.push(months + (months === 1 ? ' month' : ' months'));
+    if(days) parts.push(days + (days === 1 ? ' day' : ' days'));
+    if(hours) parts.push(hours + (hours === 1 ? ' hour' : ' hours'));
+    if(minutes || parts.length === 0) parts.push(minutes + (minutes === 1 ? ' minute' : ' minutes'));
+    return parts.join(', ');
+  }
+
+  // Fixed 3x3 home-grid layout: Currently Watching + Completed, then the
+  // seven preset platforms. A tenth box, "Other", is pinned on its own
+  // row underneath, centered, always showing regardless of count -- a
+  // parking spot for shows not yet placed on a real platform. Any
+  // further one-off custom platform in use still gets appended after
+  // that, so nothing is ever hidden.
+  var HOME_GRID_PLATFORMS = ['Apple TV+', 'Disney+ / Hulu', 'HBO', 'Hayu', 'Netflix', 'Paramount+', 'Prime Video'];
+  var OTHER_PLATFORM = 'Other';
+  var currentView = { type: 'grid' };
+
+  // Most recent AIRED date across a show's known episodes, for sorting
+  // Currently Watching by what's freshest. Shows with no TVMaze air-date
+  // data sort to the bottom, alphabetically among themselves.
+  function mostRecentAiredDate(show){
+    if(!show.episodeAirDates) return null;
+    var today = todayIso();
+    var latest = null;
+    Object.keys(show.episodeAirDates).forEach(function(key){
+      var d = show.episodeAirDates[key];
+      if(hasDropped(show, key) && (!latest || d > latest)) latest = d;
+    });
+    return latest;
+  }
+  function byMostRecentAired(a, b){
+    var da = mostRecentAiredDate(a), db = mostRecentAiredDate(b);
+    if(da && db){
+      if(da !== db) return da > db ? -1 : 1;
+      return byTitle(a, b);
+    }
+    if(da && !db) return -1;
+    if(!da && db) return 1;
+    return byTitle(a, b);
+  }
+
+  // Most-recently-marked-watched first, so a show you're bulk-watching
+  // keeps rising to the top as you go. Shows never marked watched yet
+  // (freshly added) have no timestamp and fall to the bottom, alphabetical
+  // among themselves.
+  function byLastWatched(a, b){
+    var ta = a.lastMarkedWatchedAt, tb = b.lastMarkedWatchedAt;
+    if(ta && tb){
+      if(ta !== tb) return ta > tb ? -1 : 1;
+      return byTitle(a, b);
+    }
+    if(ta && !tb) return -1;
+    if(!ta && tb) return 1;
+    return byTitle(a, b);
+  }
+
+  function render(){
+    var shelvesEl = document.getElementById('shelves');
+    var emptyEl = document.getElementById('emptyState');
+    var statLine = document.getElementById('statLine');
+    shelvesEl.innerHTML = '';
+
+    if(shows.length === 0){
+      emptyEl.style.display = 'block';
+      statLine.textContent = 'Nothing tracked yet';
+      return;
+    }
+
+    var searchInputEl = document.getElementById('searchInput');
+    var query = (searchInputEl ? searchInputEl.value : '').trim().toLowerCase();
+
+    var activeShows = shows.filter(function(s){ return !s.completed; });
+    var completedShows = shows.filter(function(s){ return s.completed; });
+
+    var byPlatform = {};
+    activeShows.forEach(function(s){
+      if(!byPlatform[s.platform]) byPlatform[s.platform] = [];
+      byPlatform[s.platform].push(s);
+    });
+    var totalActivePlatforms = Object.keys(byPlatform).length;
+    var watchStats = computeWatchStats();
+
+    emptyEl.style.display = 'none';
+    emptyEl.querySelector('h2').textContent = 'Nothing on the list yet';
+    emptyEl.querySelector('p').textContent = "Add a show above to start tracking what season and episode you're on.";
+
+    if(query){
+      var hadMatches = renderSearchResults(shelvesEl, query);
+      if(!hadMatches){
+        emptyEl.style.display = 'block';
+        emptyEl.querySelector('h2').textContent = 'No matches';
+        emptyEl.querySelector('p').textContent = 'Nothing in your list matches that search.';
+        statLine.textContent = shows.length + (shows.length === 1 ? ' show tracked' : ' shows tracked');
+        return;
+      }
+    } else if(currentView.type === 'watching'){
+      renderBackButton(shelvesEl);
+      renderCurrentlyWatchingView(shelvesEl, activeShows);
+    } else if(currentView.type === 'completed'){
+      renderBackButton(shelvesEl);
+      renderCompletedView(shelvesEl, completedShows);
+    } else if(currentView.type === 'platform'){
+      renderBackButton(shelvesEl);
+      renderPlatformView(shelvesEl, currentView.name, byPlatform);
+    } else {
+      renderHomeGrid(shelvesEl, byPlatform, completedShows, activeShows);
+    }
+
+    statLine.textContent = shows.length + (shows.length === 1 ? ' show across ' : ' shows across ') +
+      totalActivePlatforms + (totalActivePlatforms === 1 ? ' platform' : ' platforms') +
+      (completedShows.length ? ' \u00b7 ' + completedShows.length + ' completed' : '') +
+      ' \u00b7 ' + watchStats.episodes.toLocaleString() + (watchStats.episodes === 1 ? ' episode watched' : ' episodes watched') +
+      ' \u00b7 ~' + formatWatchTime(watchStats.minutes) + ' watched';
+  }
+
+  function renderBackButton(container){
+    var btn = document.createElement('button');
+    btn.className = 'back-btn';
+    btn.textContent = '\u2190 Back to Platforms';
+    btn.addEventListener('click', function(){
+      currentView = { type: 'grid' };
+      render();
+    });
+    container.appendChild(btn);
+  }
+
+  function renderHomeGrid(container, byPlatform, completedShows, activeShows){
+    var grid = document.createElement('div');
+    grid.className = 'home-grid';
+
+    var watchingCount = activeShows.filter(function(s){ return !s.upcoming && s.started && !s.caughtUp; }).length;
+
+    function addBox(label, count, color, onClick, extraClass){
+      var box = document.createElement('button');
+      box.className = extraClass ? 'home-box ' + extraClass : 'home-box';
+      box.type = 'button';
+      box.style.setProperty('--platform-color', color);
+      box.innerHTML = '<h2>' + escapeHtml(label) + '</h2>' +
+        '<div class="home-box-count">' + count + (count === 1 ? ' show' : ' shows') + '</div>';
+      box.addEventListener('click', onClick);
+      grid.appendChild(box);
+    }
+
+    addBox('Currently Watching', watchingCount, 'var(--accent-2)', function(){
+      currentView = { type: 'watching' };
+      render();
+    });
+    addBox('Completed', completedShows.length, 'var(--text-muted)', function(){
+      currentView = { type: 'completed' };
+      render();
+    });
+
+    HOME_GRID_PLATFORMS.forEach(function(platform, idx){
+      var count = (byPlatform[platform] || []).length;
+      addBox(platform, count, colorForPlatform(platform, idx), function(){
+        currentView = { type: 'platform', name: platform };
+        render();
+      });
+    });
+
+    // "Other" is pinned on its own centered row regardless of count -- a
+    // holding spot for shows whose eventual UK platform isn't known yet
+    // (e.g. a US-only Peacock show with no confirmed UK home).
+    addBox(OTHER_PLATFORM, (byPlatform[OTHER_PLATFORM] || []).length, colorForPlatform(OTHER_PLATFORM, 0), function(){
+      currentView = { type: 'platform', name: OTHER_PLATFORM };
+      render();
+    }, 'home-box-other');
+
+    // Any platform outside the fixed nine plus Other (a one-off custom
+    // name, say) still gets a box, appended after the core layout.
+    var extraPlatforms = Object.keys(byPlatform).filter(function(p){
+      return HOME_GRID_PLATFORMS.indexOf(p) === -1 && p !== OTHER_PLATFORM;
+    }).sort(function(a, b){ return a.localeCompare(b, undefined, { sensitivity: 'base' }); });
+
+    extraPlatforms.forEach(function(platform, idx){
+      addBox(platform, byPlatform[platform].length, colorForPlatform(platform, idx), function(){
+        currentView = { type: 'platform', name: platform };
+        render();
+      });
+    });
+
+    container.appendChild(grid);
+  }
+
+  function renderCurrentlyWatchingView(container, activeShows){
+    var watching = activeShows.filter(function(s){ return !s.upcoming && s.started && !s.caughtUp; }).sort(byLastWatched);
+
+    var head = document.createElement('div');
+    head.className = 'shelf-head';
+    head.innerHTML = '<h2>Currently Watching</h2>' +
+      '<span class="shelf-count">' + watching.length + (watching.length === 1 ? ' show' : ' shows') + '</span>';
+    container.appendChild(head);
+
+    if(!watching.length){
+      var empty = document.createElement('p');
+      empty.className = 'empty-shelf';
+      empty.textContent = 'Nothing currently in progress.';
+      container.appendChild(empty);
+      return;
+    }
+
+    watching.forEach(function(show){
+      container.appendChild(buildShowRow(show, { showPlatformTag: true }));
+    });
+  }
+
+  function renderCompletedView(container, completedShows){
+    var head = document.createElement('div');
+    head.className = 'shelf-head';
+    head.innerHTML = '<h2>Completed &amp; DNF</h2>' +
+      '<span class="shelf-count">' + completedShows.length + (completedShows.length === 1 ? ' show' : ' shows') + '</span>';
+    container.appendChild(head);
+
+    if(!completedShows.length){
+      var empty = document.createElement('p');
+      empty.className = 'empty-shelf';
+      empty.textContent = 'Nothing completed yet.';
+      container.appendChild(empty);
+      return;
+    }
+
+    completedShows.slice().sort(byTitle).forEach(function(show){
+      container.appendChild(buildCompletedRow(show));
+    });
+  }
+
+  function renderPlatformView(container, platformName, byPlatform){
+    var platformShows = byPlatform[platformName] || [];
+
+    var head = document.createElement('div');
+    head.className = 'shelf-head';
+    head.innerHTML = '<h2>' + escapeHtml(platformName) + '</h2>' +
+      '<span class="shelf-count">' + platformShows.length + (platformShows.length === 1 ? ' show' : ' shows') + '</span>';
+    container.appendChild(head);
+
+    // Actively-watching shows for this platform live in the Currently
+    // Watching box instead, so this page covers Up to date, Upcoming, and
+    // Not started only.
+    var caughtUp = platformShows.filter(function(s){ return !s.upcoming && s.started && s.caughtUp; }).sort(byUpcomingDate);
+    var upcoming = platformShows.filter(function(s){ return s.upcoming; }).sort(byReleaseDate);
+    var notStarted = platformShows.filter(function(s){ return !s.upcoming && !s.started; }).sort(byTitle);
+
+    function addDivider(label){
+      var divider = document.createElement('div');
+      divider.className = 'group-divider';
+      divider.textContent = label;
+      container.appendChild(divider);
+    }
+
+    if(!caughtUp.length && !upcoming.length && !notStarted.length){
+      var empty = document.createElement('p');
+      empty.className = 'empty-shelf';
+      empty.textContent = 'Nothing here right now \u2014 anything actively being watched lives in Currently Watching.';
+      container.appendChild(empty);
+      return;
+    }
+
+    caughtUp.forEach(function(show){ container.appendChild(buildShowRow(show)); });
+
+    if(upcoming.length && caughtUp.length) addDivider('Upcoming');
+    upcoming.forEach(function(show){ container.appendChild(buildShowRow(show)); });
+
+    if(notStarted.length && (caughtUp.length || upcoming.length)) addDivider('Not Started');
+    notStarted.forEach(function(show){ container.appendChild(buildShowRow(show)); });
+  }
+
+  // Search ignores the current box/grid view entirely and shows every
+  // match across the whole list, grouped by platform the old way, since
+  // narrowing search to whatever box happens to be open would make it
+  // easy to miss a match sitting in a different box. Returns whether
+  // anything matched, so render() can fall back to the empty state.
+  function renderSearchResults(container, query){
+    var visibleShows = shows.filter(function(s){ return matchesSearch(s, query); });
+    if(visibleShows.length === 0) return false;
+
+    var note = document.createElement('p');
+    note.className = 'calendar-note';
+    note.textContent = 'Showing search results across your whole list \u2014 clear the search to browse by platform.';
+    container.appendChild(note);
+
+    var activeShows = visibleShows.filter(function(s){ return !s.completed; });
+    var completedShows = visibleShows.filter(function(s){ return s.completed; });
+
+    var byPlatform = {};
+    activeShows.forEach(function(s){
+      if(!byPlatform[s.platform]) byPlatform[s.platform] = [];
+      byPlatform[s.platform].push(s);
+    });
+
+    var platformOrder = Object.keys(byPlatform).sort(function(a, b){
+      return a.localeCompare(b, undefined, { sensitivity: 'base' });
+    });
+
+    platformOrder.forEach(function(platform, idx){
+      var shelf = document.createElement('section');
+      shelf.className = 'shelf';
+      var color = colorForPlatform(platform, idx);
+
+      var head = document.createElement('div');
+      head.className = 'shelf-head';
+      head.style.setProperty('--platform-color', color);
+      head.innerHTML = '<h2>' + escapeHtml(platform) + '</h2>' +
+        '<span class="shelf-count">' + byPlatform[platform].length +
+        (byPlatform[platform].length === 1 ? ' show' : ' shows') + '</span>';
+      shelf.appendChild(head);
+
+      var watching = byPlatform[platform].filter(function(s){ return !s.upcoming && s.started && !s.caughtUp; }).sort(byTitle);
+      var caughtUp = byPlatform[platform].filter(function(s){ return !s.upcoming && s.started && s.caughtUp; }).sort(byUpcomingDate);
+      var upcoming = byPlatform[platform].filter(function(s){ return s.upcoming; }).sort(byReleaseDate);
+      var notStarted = byPlatform[platform].filter(function(s){ return !s.upcoming && !s.started; }).sort(byTitle);
+
+      function addDivider(label){
+        var divider = document.createElement('div');
+        divider.className = 'group-divider';
+        divider.textContent = label;
+        shelf.appendChild(divider);
+      }
+
+      watching.forEach(function(show){ shelf.appendChild(buildShowRow(show)); });
+      if(caughtUp.length && watching.length) addDivider('Up to Date');
+      caughtUp.forEach(function(show){ shelf.appendChild(buildShowRow(show)); });
+      if(upcoming.length && (watching.length || caughtUp.length)) addDivider('Upcoming');
+      upcoming.forEach(function(show){ shelf.appendChild(buildShowRow(show)); });
+      if(notStarted.length && (watching.length || caughtUp.length || upcoming.length)) addDivider('Not Started');
+      notStarted.forEach(function(show){ shelf.appendChild(buildShowRow(show)); });
+
+      container.appendChild(shelf);
+    });
+
+    if(completedShows.length){
+      var completedShelf = document.createElement('section');
+      completedShelf.className = 'shelf completed-shelf';
+      var completedHead = document.createElement('div');
+      completedHead.className = 'shelf-head';
+      completedHead.innerHTML = '<h2>Completed &amp; DNF</h2>' +
+        '<span class="shelf-count">' + completedShows.length +
+        (completedShows.length === 1 ? ' show' : ' shows') + '</span>';
+      completedShelf.appendChild(completedHead);
+      completedShows.slice().sort(byTitle).forEach(function(show){
+        completedShelf.appendChild(buildCompletedRow(show));
+      });
+      container.appendChild(completedShelf);
+    }
+
+    return true;
+  }
+
+  var WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Where a caught-up show should resume from, using TVMaze's own season
+  // length instead of always assuming "next season": if the current
+  // episode isn't the last one of its season, resume is the very next
+  // episode in the SAME season (a mid-season/weekly gap); only once the
+  // season is actually exhausted does resume roll to the next season's E1.
+  // This is what used to require a separate "Pause mid-season" button.
+  function computeResumePoint(show){
+    var seasonLen = show.episodesPerSeason && show.episodesPerSeason[show.season];
+    if(seasonLen && show.episode < seasonLen){
+      return { season: show.season || 1, episode: (show.episode || 1) + 1 };
+    }
+    return { season: (show.season || 1) + 1, episode: 1 };
+  }
+
+  // How many episodes of a season have actually aired as of today, per
+  // TVMaze's air dates \u2014 distinct from the season's total known episode
+  // count, which may include future/unaired episodes already announced.
+  function airedEpisodeCountForSeason(show, season){
+    if(!show.episodeAirDates) return (show.episodesPerSeason && show.episodesPerSeason[season]) || 0;
+    var today = todayIso();
+    var maxAired = 0;
+    Object.keys(show.episodeAirDates).forEach(function(key){
+      var m = /^S(\d+)E(\d+)$/.exec(key);
+      if(!m) return;
+      var s = parseInt(m[1], 10), e = parseInt(m[2], 10);
+      if(s !== season) return;
+      if(hasDropped(show, key) && e > maxAired) maxAired = e;
+    });
+    return maxAired;
+  }
+
+  // Places a show at a given season/episode and settles it into whichever
+  // bucket that position implies, using the same TVMaze-driven rule as
+  // ordinary first-watch progress: caught up to the last known season and
+  // that show has Ended -> Completed; caught up to the last known season
+  // but still Running/unclear -> Up to date; short of the last known
+  // season (a further one already exists) -> stays in Currently Watching.
+  // Shared by rewatch-pass completion and stopping a rewatch mid-pass,
+  // since both need to drop back to the show's "real" (non-rewatch) state.
+  function settleShowAtPosition(show, season, episode){
+    show.season = season;
+    show.episode = episode;
+    var isLastKnownSeason = show.totalSeasons && season >= show.totalSeasons;
+    if(isLastKnownSeason && show.showStatus === 'Ended'){
+      show.completed = true;
+      show.completedStatus = 'finished';
+      show.caughtUp = false;
+    } else if(isLastKnownSeason){
+      show.completed = false;
+      show.completedStatus = null;
+      show.caughtUp = true;
+      var resume = computeResumePoint(show);
+      show.resumeSeason = resume.season;
+      show.resumeEpisode = resume.episode;
+      autofillNextSeasonDate(show);
+    } else {
+      show.completed = false;
+      show.completedStatus = null;
+      show.caughtUp = false;
+    }
+  }
+
+  // Checks whether a live rewatch pass has just reached the frontier it
+  // was locked to when it began, and if so, records the pass and settles
+  // the show back into its real (non-rewatch) state. Returns true if a
+  // pass was completed, so callers can skip their own season-rollover
+  // logic (which would otherwise also fire on the same episode change).
+  function checkRewatchCompletion(show){
+    if(!show.rewatchInProgress) return false;
+    var reachedFrontier = (show.season > show.rewatchFrontierSeason) ||
+      (show.season === show.rewatchFrontierSeason && show.episode >= show.rewatchFrontierEpisode);
+    if(!reachedFrontier) return false;
+
+    var passEpisodes = show.rewatchFrontierEpisode;
+    if(show.episodesPerSeason){
+      for(var s = 1; s < show.rewatchFrontierSeason; s++) passEpisodes += show.episodesPerSeason[s] || 0;
+    }
+    show.rewatchPassCounts.push(passEpisodes);
+
+    var frontierSeason = show.rewatchFrontierSeason;
+    var frontierEpisode = show.rewatchFrontierEpisode;
+    show.rewatchInProgress = false;
+    show.originalWatchEpisodeCount = null;
+    show.rewatchFrontierSeason = null;
+    show.rewatchFrontierEpisode = null;
+
+    settleShowAtPosition(show, frontierSeason, frontierEpisode);
+    addBannerItem(show.title + ' \u2014 rewatch complete (' + show.rewatchPassCounts.length + 'x)');
+    return true;
+  }
+
+  // Advances a show by one episode using its TVMaze episode-count data.
+  // Moves to Up to date once caught up on everything actually RELEASED so
+  // far (not just the true season finale \u2014 this covers a weekly show
+  // whose season isn't over yet), and to Completed once that also happens
+  // to be the last episode of the last known season and TVMaze says the
+  // show has Ended. If a rewatch is in progress, checks that first: an
+  // episode that reaches the locked-in frontier completes the pass instead
+  // of running the ordinary progress logic below.
+  function markEpisodeWatched(show){
+    var perSeason = show.episodesPerSeason;
+    if(!perSeason) return;
+
+    show.lastMarkedWatchedAt = Date.now();
+    // The episode you just finished \u2014 every "have I caught up / finished
+    // the season" check below must be judged against THIS number, not the
+    // tentative next-episode pointer, or a show gets marked a full episode
+    // ahead of what's actually been watched.
+    var watchedEpisode = show.episode || 1;
+    show.episode = watchedEpisode + 1;
+    if(checkRewatchCompletion(show)){
+      saveShows();
+      render();
+      return;
+    }
+
+    var totalInSeason = perSeason[show.season] || 0;
+    var airedInSeason = airedEpisodeCountForSeason(show, show.season);
+    var caughtUpOnAired = airedInSeason > 0 && watchedEpisode >= airedInSeason;
+
+    if(!caughtUpOnAired){
+      saveShows();
+      render();
+      return;
+    }
+
+    var isTrueSeasonEnd = totalInSeason > 0 && watchedEpisode >= totalInSeason;
+    var isLastKnownSeason = show.totalSeasons && show.season >= show.totalSeasons;
+
+    if(isTrueSeasonEnd && isLastKnownSeason && show.showStatus === 'Ended'){
+      show.episode = watchedEpisode;
+      show.completed = true;
+      show.completedStatus = 'finished';
+    } else if(isTrueSeasonEnd && !isLastKnownSeason){
+      // A further season is already announced/fully out \u2014 roll straight
+      // into it rather than parking at Up to date only to un-pause again.
+      show.season = (show.season || 1) + 1;
+      show.episode = 1;
+    } else {
+      // Caught up on everything released so far \u2014 whether that's
+      // mid-season (weekly releases) or the true, final season finale.
+      // show.episode reflects the last episode actually watched here, not
+      // the tentative next one, so the "Up to date" badge and the resume
+      // point it's computed from both line up with reality.
+      show.episode = watchedEpisode;
+      show.caughtUp = true;
+      var resume = computeResumePoint(show);
+      show.resumeSeason = resume.season;
+      show.resumeEpisode = resume.episode;
+      autofillNextSeasonDate(show);
+    }
+    saveShows();
+    render();
+  }
+
+  // If a caught-up show has TVMaze episode dates and no manually-set
+  // resume date yet, fills it in from its resume point's episode. Never
+  // overwrites a date that's already there (manual or previously set).
+  function autofillNextSeasonDate(show){
+    if(!show || !show.caughtUp || show.nextSeasonDate || !show.episodeAirDates) return;
+    var season = show.resumeSeason || ((show.season || 1) + 1);
+    var episode = show.resumeEpisode || 1;
+    var key = 'S' + season + 'E' + episode;
+    if(show.episodeAirDates[key]){
+      show.nextSeasonDate = show.episodeAirDates[key];
+    }
+  }
+
+  // "Up to date" only makes sense for a show that's still actually coming
+  // back -- i.e. Running on TVMaze. A show whose known run has ended, or
+  // that TVMaze doesn't even have a confirmed future for yet (Ended, To Be
+  // Determined, In Development, etc.), being "caught up" on it just means
+  // it's finished. This applies the same rule the live refresh already
+  // uses when a Running show's status later changes, but here it covers
+  // the add/edit path too: matching a show as Up to date while it's
+  // already non-Running (or re-matching one that turns out to be) routes
+  // it straight to Completed instead, rather than sitting in Up to date
+  // forever with no way to actually air a resume episode.
+  function settleUpToDateAgainstShowStatus(show, notify){
+    if(!show.caughtUp || !show.showStatus || show.showStatus === 'Running') return;
+    show.caughtUp = false;
+    show.completed = true;
+    show.completedStatus = 'finished';
+    show.resumeSeason = null;
+    show.resumeEpisode = null;
+    show.nextSeasonDate = null;
+    if(notify){
+      addBannerItem(show.title + ' is ' + show.showStatus + ' on TVMaze \u2014 added to Completed instead of Up to date');
+    }
+  }
+
+  function stopWatching(show){
+    if(show.rewatchInProgress){
+      // Stopping mid-rewatch never touches the ORIGINAL watch-through's
+      // Finished/DNF status \u2014 only the rewatch itself is abandoned. The
+      // show drops back to wherever it really stood before the rewatch
+      // began (its locked frontier), settled the same way a completed
+      // pass would be.
+      show.rewatchStoppedSeason = show.season || 1;
+      show.rewatchStoppedEpisode = show.episode || 1;
+      var frontierSeason = show.rewatchFrontierSeason || show.season || 1;
+      var frontierEpisode = show.rewatchFrontierEpisode || show.episode || 1;
+      show.rewatchInProgress = false;
+      show.originalWatchEpisodeCount = null;
+      show.rewatchFrontierSeason = null;
+      show.rewatchFrontierEpisode = null;
+      settleShowAtPosition(show, frontierSeason, frontierEpisode);
+      saveShows();
+      render();
+      return;
+    }
+    show.completed = true;
+    show.completedStatus = 'dnf';
+    show.dnfSeason = show.season || 1;
+    show.dnfEpisode = show.caughtUp ? null : (show.episode || 1);
+    saveShows();
+    render();
+  }
+
+  function buildShowRow(show, opts){
+    var row = document.createElement('div');
+    row.className = 'show-row' + (show.caughtUp ? ' caught-up' : '') + (!show.started ? ' not-started' : '');
+
+    var titleRow = document.createElement('div');
+    titleRow.className = 'show-title-row';
+
+    var title = document.createElement('div');
+    title.className = 'show-title';
+    title.textContent = show.title;
+    titleRow.appendChild(title);
+
+    if(opts && opts.showPlatformTag){
+      var platformTag = document.createElement('span');
+      platformTag.className = 'completed-platform-tag';
+      platformTag.textContent = show.platform;
+      titleRow.appendChild(platformTag);
+    }
+
+    row.appendChild(titleRow);
+
+    var controls = document.createElement('div');
+    controls.className = 'show-controls';
+
+    if(show.upcoming){
+      var upcomingBadge = document.createElement('span');
+      upcomingBadge.className = 'status-badge status-badge-muted';
+      upcomingBadge.textContent = show.releaseDate
+        ? 'Releases ' + formatShortDate(show.releaseDate)
+        : 'Upcoming';
+      controls.appendChild(upcomingBadge);
+
+      var releaseStartBtn = document.createElement('button');
+      releaseStartBtn.className = 'status-btn status-btn-primary';
+      releaseStartBtn.textContent = 'Start';
+      releaseStartBtn.addEventListener('click', function(){
+        show.upcoming = false;
+        show.releaseDate = null;
+        show.started = true;
+        show.season = 1;
+        show.episode = 1;
+        saveShows();
+        render();
+      });
+      controls.appendChild(releaseStartBtn);
+
+      controls.appendChild(buildEditBtn(show));
+    } else if(!show.started){
+      var notStartedBadge = document.createElement('span');
+      notStartedBadge.className = 'status-badge status-badge-muted';
+      notStartedBadge.textContent = 'Not Started';
+      controls.appendChild(notStartedBadge);
+
+      var startBtn = document.createElement('button');
+      startBtn.className = 'status-btn status-btn-primary';
+      startBtn.textContent = 'Start';
+      startBtn.addEventListener('click', function(){
+        show.started = true;
+        show.season = 1;
+        show.episode = 1;
+        saveShows();
+        render();
+      });
+      controls.appendChild(startBtn);
+
+      controls.appendChild(buildEditBtn(show));
+    } else if(show.caughtUp){
+      var badge = document.createElement('span');
+      badge.className = 'status-badge';
+      badge.textContent = 'Up to Date \u00b7 S' + show.season + 'E' + show.episode;
+      controls.appendChild(badge);
+
+      if(show.rewatchPassCounts && show.rewatchPassCounts.length){
+        var rewatchBadge = document.createElement('span');
+        rewatchBadge.className = 'status-badge status-badge-muted';
+        rewatchBadge.textContent = 'Rewatched (' + show.rewatchPassCounts.length + 'x)';
+        controls.appendChild(rewatchBadge);
+      }
+
+      var resumeSeason = show.resumeSeason || ((show.season || 1) + 1);
+      var resumeEpisode = show.resumeEpisode || 1;
+
+      if(show.nextSeasonDate || pendingDateEntry[show.id]){
+        var dateField = document.createElement('div');
+        dateField.className = 'field-pill';
+
+        var dateLabel = document.createElement('label');
+        dateLabel.textContent = 'S' + resumeSeason + 'E' + resumeEpisode + ' airs';
+        dateLabel.setAttribute('for', 'date-' + show.id);
+        dateField.appendChild(dateLabel);
+
+        var dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.id = 'date-' + show.id;
+        dateInput.value = show.nextSeasonDate || '';
+        dateInput.addEventListener('change', function(){
+          show.nextSeasonDate = dateInput.value || null;
+          delete pendingDateEntry[show.id];
+          saveShows();
+          checkAutoPromotions();
+          render();
+        });
+        dateField.appendChild(dateInput);
+
+        controls.appendChild(dateField);
+
+        if(pendingDateEntry[show.id] && !show.nextSeasonDate){
+          // Two rAFs, not setTimeout(0): the browser is still settling its
+          // own default focus handling from the click that removed the "+
+          // Add air date" button (this whole row got rebuilt out from under
+          // that click). Forcing focus/showPicker() before that settles is
+          // what was causing the field to flash open and immediately get
+          // deselected -- letting two paint frames pass first gives that
+          // default handling time to finish before we take focus.
+          requestAnimationFrame(function(){
+            requestAnimationFrame(function(){
+              dateInput.focus();
+              if(dateInput.showPicker) dateInput.showPicker();
+            });
+          });
+        }
+      } else {
+        var addDateBtn = document.createElement('button');
+        addDateBtn.className = 'status-btn';
+        addDateBtn.textContent = '+ Add Air Date';
+        addDateBtn.addEventListener('click', function(){
+          pendingDateEntry[show.id] = true;
+          // Deferred a tick so the click's own default focus handling on
+          // this button finishes before the row gets rebuilt out from
+          // under it (see the rAF note above -- same underlying race).
+          setTimeout(render, 0);
+        });
+        controls.appendChild(addDateBtn);
+      }
+
+      var newSeasonBtn = document.createElement('button');
+      newSeasonBtn.className = 'status-btn status-btn-primary';
+      // Same-season resume (a mid-season/weekly gap) vs a genuinely new
+      // season is now derived from the resume point itself, rather than a
+      // separate stored flag \u2014 this is what "Pause mid-season" used to
+      // set explicitly.
+      newSeasonBtn.textContent = (resumeSeason === show.season) ? 'Next Episodes Out' : 'New Season Out';
+      newSeasonBtn.addEventListener('click', function(){
+        show.season = show.resumeSeason || ((show.season || 1) + 1);
+        show.episode = show.resumeEpisode || 1;
+        show.caughtUp = false;
+        show.nextSeasonDate = null;
+        show.resumeSeason = null;
+        show.resumeEpisode = null;
+        delete pendingDateEntry[show.id];
+        saveShows();
+        render();
+      });
+      controls.appendChild(newSeasonBtn);
+
+      if(!show.rewatchInProgress){
+        var logRewatchBtn = document.createElement('button');
+        logRewatchBtn.className = 'status-btn';
+        logRewatchBtn.textContent = 'Log a Rewatch';
+        logRewatchBtn.title = 'Start rewatching from S1E1 while staying caught up on new episodes as they release.';
+        logRewatchBtn.addEventListener('click', function(){
+          show.originalWatchEpisodeCount = episodesWatchedForShow(show);
+          show.rewatchInProgress = true;
+          show.rewatchFrontierSeason = show.season || 1;
+          show.rewatchFrontierEpisode = show.episode || 1;
+          show.caughtUp = false;
+          show.nextSeasonDate = null;
+          show.resumeSeason = null;
+          show.resumeEpisode = null;
+          delete pendingDateEntry[show.id];
+          show.season = 1;
+          show.episode = 1;
+          saveShows();
+          render();
+        });
+        controls.appendChild(logRewatchBtn);
+      }
+
+      var stopBtnCaughtUp = document.createElement('button');
+      stopBtnCaughtUp.className = 'status-btn';
+      stopBtnCaughtUp.textContent = 'Stop Watching';
+      stopBtnCaughtUp.addEventListener('click', function(){
+        stopWatching(show);
+      });
+      controls.appendChild(stopBtnCaughtUp);
+
+      controls.appendChild(buildEditBtn(show));
+    } else {
+      if(show.rewatchInProgress){
+        var rewatchInProgressBadge = document.createElement('span');
+        rewatchInProgressBadge.className = 'status-badge status-badge-muted';
+        rewatchInProgressBadge.textContent = 'Rewatch in Progress';
+        controls.appendChild(rewatchInProgressBadge);
+      } else if(show.rewatchPassCounts && show.rewatchPassCounts.length){
+        var rewatchDoneBadge = document.createElement('span');
+        rewatchDoneBadge.className = 'status-badge status-badge-muted';
+        rewatchDoneBadge.textContent = 'Rewatched (' + show.rewatchPassCounts.length + 'x)';
+        controls.appendChild(rewatchDoneBadge);
+      }
+
+      // Read-only position. Season/episode are corrected through Edit.
+      var positionChip = document.createElement('span');
+      positionChip.className = 'position-chip';
+      positionChip.textContent = 'S' + (show.season || 1) + ' E' + (show.episode || 1);
+      var seasonTotal = show.episodesPerSeason && show.episodesPerSeason[show.season];
+      if(seasonTotal){
+        var ofTotal = document.createElement('span');
+        ofTotal.className = 'position-of';
+        ofTotal.textContent = 'of ' + seasonTotal;
+        positionChip.appendChild(ofTotal);
+      }
+      controls.appendChild(positionChip);
+
+      if(seasonTotal){
+        var watchedBtn = document.createElement('button');
+        watchedBtn.className = 'watched-btn';
+        watchedBtn.textContent = 'Mark As Watched';
+        watchedBtn.addEventListener('click', function(){
+          markEpisodeWatched(show);
+        });
+        controls.appendChild(watchedBtn);
+      }
+
+      var stopBtnWatching = document.createElement('button');
+      stopBtnWatching.className = 'status-btn';
+      stopBtnWatching.textContent = 'Stop Watching';
+      stopBtnWatching.addEventListener('click', function(){
+        stopWatching(show);
+      });
+      controls.appendChild(stopBtnWatching);
+
+      controls.appendChild(buildEditBtn(show));
+    }
+
+    row.appendChild(controls);
+
+    var footer = document.createElement('div');
+    footer.className = 'show-footer';
+    var removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = 'Remove';
+    removeBtn.addEventListener('click', function(){
+      shows = shows.filter(function(s){ return s.id !== show.id; });
+      saveShows();
+      render();
+    });
+    footer.appendChild(removeBtn);
+    row.appendChild(footer);
+
+    return row;
+  }
+
+  function formatShortDate(iso){
+    var d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function buildEditBtn(show){
+    var btn = document.createElement('button');
+    btn.className = 'edit-btn';
+    btn.textContent = 'Edit';
+    btn.addEventListener('click', function(){
+      openEditPanel(show);
+    });
+    return btn;
+  }
+
+  // Inline "which platform is it on now" picker shown when reviving a
+  // completed/DNF'd show back into active tracking.
+  function buildMoveBackPicker(show, container){
+    var wrap = document.createElement('div');
+    wrap.className = 'move-back-row';
+
+    var select = document.createElement('select');
+    getKnownPlatforms().forEach(function(p){
+      var opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      if(p === show.platform) opt.selected = true;
+      select.appendChild(opt);
+    });
+    var customOpt = document.createElement('option');
+    customOpt.value = '__custom';
+    customOpt.textContent = 'Other (name it)\u2026';
+    select.appendChild(customOpt);
+    wrap.appendChild(select);
+
+    var customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.placeholder = 'Platform name';
+    customInput.style.display = 'none';
+    customInput.style.flex = '1 1 160px';
+    wrap.appendChild(customInput);
+
+    select.addEventListener('change', function(){
+      customInput.style.display = select.value === '__custom' ? 'block' : 'none';
+      if(select.value === '__custom') customInput.focus();
+    });
+
+    var confirmBtn = document.createElement('button');
+    confirmBtn.className = 'btn-primary btn-small';
+    confirmBtn.textContent = 'Move Back to Tracking';
+    confirmBtn.addEventListener('click', function(){
+      var platform = select.value === '__custom'
+        ? (customInput.value.trim() || show.platform)
+        : select.value;
+      show.platform = platform;
+      show.completed = false;
+      show.upcoming = false;
+      show.started = true;
+      show.caughtUp = false;
+      show.nextSeasonDate = null;
+      if(show.completedStatus === 'dnf'){
+        show.season = show.dnfSeason || 1;
+        show.episode = show.dnfEpisode || 1;
+      } else {
+        show.season = 1;
+        show.episode = 1;
+      }
+      show.completedStatus = null;
+      show.dnfSeason = null;
+      show.dnfEpisode = null;
+      saveShows();
+      render();
+    });
+    wrap.appendChild(confirmBtn);
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn-plain btn-small';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', function(){
+      pendingMoveBack[show.id] = false;
+      render();
+    });
+    wrap.appendChild(cancelBtn);
+
+    container.appendChild(wrap);
+  }
+
+  var pendingMoveBack = {};
+
+  function buildCompletedRow(show){
+    var row = document.createElement('div');
+    row.className = 'show-row completed-row';
+
+    var title = document.createElement('div');
+    title.className = 'show-title';
+    title.textContent = show.title;
+    row.appendChild(title);
+
+    var controls = document.createElement('div');
+    controls.className = 'show-controls';
+
+    var platformTag = document.createElement('span');
+    platformTag.className = 'completed-platform-tag';
+    platformTag.textContent = show.platform;
+    controls.appendChild(platformTag);
+
+    var badge = document.createElement('span');
+    if(show.completedStatus === 'dnf'){
+      badge.className = 'status-badge status-badge-dnf';
+      badge.textContent = show.dnfEpisode
+        ? 'DNF at S' + show.dnfSeason + 'E' + show.dnfEpisode
+        : 'DNF at S' + show.dnfSeason;
+    } else {
+      badge.className = 'status-badge status-badge-muted';
+      if(show.episodesPerSeason && show.totalSeasons){
+        var totalEpisodes = 0;
+        Object.keys(show.episodesPerSeason).forEach(function(k){ totalEpisodes += show.episodesPerSeason[k]; });
+        badge.textContent = 'Finished: ' + show.totalSeasons + (show.totalSeasons === 1 ? ' Season, ' : ' Seasons, ') +
+          totalEpisodes + (totalEpisodes === 1 ? ' Episode' : ' Episodes');
+      } else {
+        badge.textContent = 'Finished';
+      }
+    }
+    controls.appendChild(badge);
+
+    if(show.rewatchPassCounts && show.rewatchPassCounts.length){
+      var rewatchCountBadge = document.createElement('span');
+      rewatchCountBadge.className = 'status-badge status-badge-muted';
+      rewatchCountBadge.textContent = 'Rewatched (' + show.rewatchPassCounts.length + 'x)';
+      controls.appendChild(rewatchCountBadge);
+    }
+    if(show.rewatchStoppedSeason){
+      var rewatchStoppedBadge = document.createElement('span');
+      rewatchStoppedBadge.className = 'status-badge status-badge-muted';
+      rewatchStoppedBadge.textContent = 'Stopped rewatch at S' + show.rewatchStoppedSeason + 'E' + show.rewatchStoppedEpisode;
+      controls.appendChild(rewatchStoppedBadge);
+    }
+
+    if(!pendingMoveBack[show.id]){
+      if(show.completedStatus === 'dnf'){
+        var moveBtn = document.createElement('button');
+        moveBtn.className = 'status-btn';
+        moveBtn.textContent = 'Move Back to Tracking';
+        moveBtn.addEventListener('click', function(){
+          pendingMoveBack[show.id] = true;
+          render();
+        });
+        controls.appendChild(moveBtn);
+      } else {
+        var rewatchBtn = document.createElement('button');
+        rewatchBtn.className = 'status-btn status-btn-primary';
+        rewatchBtn.textContent = 'Rewatch';
+        rewatchBtn.addEventListener('click', function(){
+          show.originalWatchEpisodeCount = episodesWatchedForShow(show);
+          show.rewatchInProgress = true;
+          show.rewatchFrontierSeason = show.totalSeasons || show.season || 1;
+          show.rewatchFrontierEpisode = (show.episodesPerSeason && show.totalSeasons)
+            ? (show.episodesPerSeason[show.totalSeasons] || 1)
+            : (show.episode || 1);
+          show.completed = false;
+          show.completedStatus = null;
+          show.caughtUp = false;
+          show.started = true;
+          show.season = 1;
+          show.episode = 1;
+          saveShows();
+          render();
+        });
+        controls.appendChild(rewatchBtn);
+      }
+
+      controls.appendChild(buildEditBtn(show));
+    }
+
+    row.appendChild(controls);
+
+    if(!pendingMoveBack[show.id]){
+      var footer = document.createElement('div');
+      footer.className = 'show-footer';
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', function(){
+        shows = shows.filter(function(s){ return s.id !== show.id; });
+        saveShows();
+        render();
+      });
+      footer.appendChild(removeBtn);
+      row.appendChild(footer);
+    }
+
+    if(pendingMoveBack[show.id]){
+      buildMoveBackPicker(show, row);
+    }
+
+    return row;
+  }
+
+  function escapeHtml(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Add panel wiring
+  var addPanel = document.getElementById('addPanel');
+  var openAddBtn = document.getElementById('openAddBtn');
+  var cancelAddBtn = document.getElementById('cancelAddBtn');
+  var exportBtn = document.getElementById('exportBtn');
+  var importBtn = document.getElementById('importBtn');
+  var importInput = document.getElementById('importInput');
+
+  exportBtn.addEventListener('click', function(){
+    var payload = { shows: shows, calendarEntries: calendarEntries };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'watchlist-export-' + stamp + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  importBtn.addEventListener('click', function(){
+    importInput.click();
+  });
+
+  importInput.addEventListener('change', function(){
+    var file = importInput.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var parsed;
+      try{
+        parsed = JSON.parse(reader.result);
+      }catch(e){
+        window.alert('That file isn\'t valid watchlist data.');
+        importInput.value = '';
+        return;
+      }
+
+      var importedShows, importedEntries;
+      if(Array.isArray(parsed)){
+        // Older export format: a plain array of shows, no calendar data.
+        importedShows = parsed;
+        importedEntries = [];
+      } else if(parsed && Array.isArray(parsed.shows)){
+        importedShows = parsed.shows;
+        importedEntries = Array.isArray(parsed.calendarEntries) ? parsed.calendarEntries : [];
+      } else {
+        window.alert('That file isn\'t valid watchlist data.');
+        importInput.value = '';
+        return;
+      }
+
+      var proceed = window.confirm(
+        'Import ' + importedShows.length + (importedShows.length === 1 ? ' show' : ' shows') +
+        '? This replaces everything currently in this list.'
+      );
+      if(proceed){
+        normalizeShows(importedShows);
+        shows = importedShows;
+        calendarEntries = importedEntries;
+        saveShows();
+        saveCalendarEntries();
+        checkAutoPromotions();
+        render();
+      }
+      importInput.value = '';
+    };
+    reader.readAsText(file);
+  });
+  var submitAddBtn = document.getElementById('submitAddBtn');
+  var platformSelect = document.getElementById('platformSelect');
+  var titleInput = document.getElementById('titleInput');
+  var seasonInput = document.getElementById('seasonInput');
+  var episodeInput = document.getElementById('episodeInput');
+  var seasonEpisodeRow = document.getElementById('seasonEpisodeRow');
+  var releaseDateRow = document.getElementById('releaseDateRow');
+  var releaseDateInput = document.getElementById('releaseDateInput');
+  var statusRadioGroup = document.getElementById('statusRadioGroup');
+  var addPanelHeading = null; // set lazily if the panel gains a title element
+
+  // null while adding a new show; set to a show object while editing one.
+  var editingShow = null;
+  // The show's status classification at the moment the edit panel opened,
+  // so submit can tell whether the radio selection actually changed.
+  var editingOriginalStatus = null;
+
+  // Classifies a show into the same buckets as the add-form radios, so
+  // editing can detect whether the person changed a show's status.
+  function classifyShowStatus(show){
+    if(show.completed && show.completedStatus === 'dnf') return 'dnf';
+    if(show.completed) return 'completed';
+    if(show.upcoming) return 'upcoming';
+    if(!show.started) return 'notStarted';
+    if(show.caughtUp) return 'upToDate';
+    return 'watching';
+  }
+
+  var lookupRow = document.getElementById('lookupRow');
+  var lookupBtn = document.getElementById('lookupBtn');
+  var lookupStatus = document.getElementById('lookupStatus');
+  var lookupResults = document.getElementById('lookupResults');
+  var lookupMatch = document.getElementById('lookupMatch');
+  var lookupMatchText = document.getElementById('lookupMatchText');
+  var lookupChangeBtn = document.getElementById('lookupChangeBtn');
+
+  // Holds the confirmed TVMaze match for the show currently being added
+  // or edited, until it's saved onto the show object on submit.
+  var pendingLookup = null;
+
+  function episodeCountSummary(episodesPerSeason, totalSeasons){
+    var total = 0;
+    Object.keys(episodesPerSeason).forEach(function(k){ total += episodesPerSeason[k]; });
+    return totalSeasons + (totalSeasons === 1 ? ' season' : ' seasons') + ', ' +
+      total + (total === 1 ? ' episode' : ' episodes');
+  }
+
+  function showLookupMatch(name, network, status, episodesPerSeason, totalSeasons){
+    lookupResults.style.display = 'none';
+    lookupResults.innerHTML = '';
+    lookupStatus.textContent = '';
+    lookupMatch.style.display = 'flex';
+    lookupMatchText.textContent = 'Matched: ' + name + (network ? ' (' + network + ')' : '') +
+      ' \u2014 ' + episodeCountSummary(episodesPerSeason, totalSeasons) + ', ' + status;
+  }
+
+  function clearLookupUi(){
+    pendingLookup = null;
+    lookupResults.style.display = 'none';
+    lookupResults.innerHTML = '';
+    lookupMatch.style.display = 'none';
+    lookupStatus.textContent = '';
+  }
+
+  // Fetches the full episode list for a chosen TVMaze show id and stores
+  // the season->episode-count breakdown as the pending lookup match.
+  // When adding a show as Up to date and a TVMaze match is (or becomes)
+  // available, the season/episode fields should default to the LAST known
+  // episode, not S1E1 \u2014 the whole point of "Up to date" is that you've
+  // seen everything released, so you shouldn't have to look up and type
+  // that position yourself. Only touches the fields when they're still at
+  // the untouched S1E1 default, so it never overwrites a position someone
+  // has already corrected by hand.
+  // Given a show's raw episodeAirDates map, finds the season/episode of the
+  // most recent episode that has actually aired as of today (ignoring any
+  // announced-but-unaired episodes TVMaze already has in its listing).
+  // Returns null if nothing has aired yet.
+  function lastAiredPosition(lookup){
+    if(!lookup || !lookup.episodeAirDates) return null;
+    var best = null;
+    Object.keys(lookup.episodeAirDates).forEach(function(key){
+      var m = /^S(\d+)E(\d+)$/.exec(key);
+      if(!m) return;
+      if(!hasDropped(lookup, key)) return;
+      var season = parseInt(m[1], 10), episode = parseInt(m[2], 10);
+      if(!best || season > best.season || (season === best.season && episode > best.episode)){
+        best = { season: season, episode: episode };
+      }
+    });
+    return best;
+  }
+
+  // The pending match with drop rules applied for whichever platform is
+  // currently picked in the form.
+  function withPlatform(lookup){
+    if(!lookup) return lookup;
+    lookup.platform = platformSelect.value || null;
+    applyDropRules(lookup);
+    return lookup;
+  }
+
+  function autofillUpToDateSeasonEpisode(){
+    if(getSelectedStatus() !== 'upToDate' || !pendingLookup || !pendingLookup.totalSeasons) return;
+    var atDefault = (parseInt(seasonInput.value, 10) || 1) === 1 && (parseInt(episodeInput.value, 10) || 1) === 1;
+    if(!atDefault) return;
+    var lastAired = lastAiredPosition(withPlatform(pendingLookup));
+    var lastSeason, lastEpisode;
+    if(lastAired){
+      lastSeason = lastAired.season;
+      lastEpisode = lastAired.episode;
+    } else {
+      // No per-episode air dates to go on \u2014 fall back to the show's
+      // overall last known season/episode count, same as before.
+      lastSeason = pendingLookup.totalSeasons;
+      lastEpisode = (pendingLookup.episodesPerSeason && pendingLookup.episodesPerSeason[lastSeason]) || 1;
+    }
+    seasonInput.value = lastSeason;
+    episodeInput.value = lastEpisode;
+  }
+
+  function selectTvMazeShow(showSummary){
+    lookupStatus.textContent = 'Fetching episode list\u2026';
+    lookupResults.style.display = 'none';
+    fetch('https://api.tvmaze.com/shows/' + showSummary.id + '?embed=episodes')
+      .then(function(r){
+        if(!r.ok) throw new Error('bad response');
+        return r.json();
+      })
+      .then(function(data){
+        var episodes = (data._embedded && data._embedded.episodes) || [];
+        var perSeason = {};
+        var airDates = {};
+        var runtimeSum = 0, runtimeCount = 0;
+        episodes.forEach(function(ep){
+          if(!ep.season || !ep.number) return;
+          if(!perSeason[ep.season] || ep.number > perSeason[ep.season]){
+            perSeason[ep.season] = ep.number;
+          }
+          if(ep.airdate){
+            airDates['S' + ep.season + 'E' + ep.number] = ep.airdate;
+          }
+          if(typeof ep.runtime === 'number' && ep.runtime > 0){
+            runtimeSum += ep.runtime;
+            runtimeCount++;
+          }
+        });
+        var totalSeasons = Object.keys(perSeason).reduce(function(max, k){
+          return Math.max(max, parseInt(k, 10));
+        }, 0);
+        if(totalSeasons === 0){
+          lookupStatus.textContent = 'TVMaze has no episode data for that show yet. You can still add it manually.';
+          return;
+        }
+        // Prefer an average across actual episode runtimes; fall back to
+        // the show's own average/typical runtime field if none are set.
+        var avgRuntime = runtimeCount > 0 ? Math.round(runtimeSum / runtimeCount) :
+          (data.averageRuntime || data.runtime || null);
+        var network = (data.network && data.network.name) || (data.webChannel && data.webChannel.name) || '';
+        pendingLookup = {
+          tvmazeId: data.id,
+          showStatus: data.status || null,
+          episodesPerSeason: perSeason,
+          totalSeasons: totalSeasons,
+          episodeAirDates: airDates,
+          episodeAirInfo: buildAirInfo(episodes),
+          network: network || null,
+          avgRuntimeMinutes: avgRuntime
+        };
+        withPlatform(pendingLookup);
+        // Fill in the confirmed title, since it's easy to match a show
+        // without having finished typing its full name.
+        titleInput.value = data.name;
+        autofillUpToDateSeasonEpisode();
+        showLookupMatch(data.name, network, data.status, perSeason, totalSeasons);
+      })
+      .catch(function(){
+        lookupStatus.textContent = "Couldn't reach TVMaze. This only works in the Mac app, not the browser preview, and needs an internet connection.";
+      });
+  }
+
+  function runTvMazeSearch(){
+    var title = titleInput.value.trim();
+    if(!title){
+      titleInput.focus();
+      return;
+    }
+    clearLookupUi();
+    lookupStatus.textContent = 'Searching TVMaze\u2026';
+    fetch('https://api.tvmaze.com/search/shows?q=' + encodeURIComponent(title))
+      .then(function(r){
+        if(!r.ok) throw new Error('bad response');
+        return r.json();
+      })
+      .then(function(results){
+        if(!results.length){
+          lookupStatus.textContent = 'No matches found on TVMaze. You can still add it manually.';
+          return;
+        }
+        lookupStatus.textContent = 'Which one is it?';
+        lookupResults.innerHTML = '';
+        lookupResults.style.display = 'flex';
+        results.slice(0, 6).forEach(function(r){
+          var show = r.show;
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lookup-result';
+          var network = (show.network && show.network.name) || (show.webChannel && show.webChannel.name) || 'Unknown network';
+          var year = show.premiered ? show.premiered.slice(0, 4) : '?';
+          btn.innerHTML = '<span>' + escapeHtml(show.name) + '</span>' +
+            '<span class="lookup-result-meta">' + escapeHtml(network) + ' \u00b7 ' + year +
+            ' \u00b7 ' + escapeHtml(show.status || '') + '</span>';
+          btn.addEventListener('click', function(){
+            selectTvMazeShow(show);
+          });
+          lookupResults.appendChild(btn);
+        });
+      })
+      .catch(function(){
+        lookupStatus.textContent = "Couldn't reach TVMaze. This only works in the Mac app, not the browser preview, and needs an internet connection.";
+      });
+  }
+
+  lookupBtn.addEventListener('click', runTvMazeSearch);
+  lookupChangeBtn.addEventListener('click', function(){
+    lookupMatch.style.display = 'none';
+    runTvMazeSearch();
+  });
+
+  function getSelectedStatus(){
+    var checked = statusRadioGroup.querySelector('input[name="addStatus"]:checked');
+    return checked ? checked.value : 'watching';
+  }
+  function setSelectedStatus(value){
+    var radio = statusRadioGroup.querySelector('input[name="addStatus"][value="' + value + '"]');
+    if(radio) radio.checked = true;
+  }
+
+  var seasonLabelEl = document.querySelector('label[for="seasonInput"]');
+  var episodeLabelEl = document.querySelector('label[for="episodeInput"]');
+
+  function refreshFieldVisibility(){
+    var status = getSelectedStatus();
+    seasonEpisodeRow.style.display = (status === 'watching' || status === 'notStarted' || status === 'upToDate' || status === 'dnf') ? 'grid' : 'none';
+    releaseDateRow.style.display = status === 'upcoming' ? 'grid' : 'none';
+    lookupRow.style.display = (status === 'watching' || status === 'notStarted' || status === 'upToDate' || status === 'upcoming' || status === 'completed' || status === 'dnf') ? 'block' : 'none';
+
+    if(status === 'dnf'){
+      seasonLabelEl.textContent = 'Season you stopped at';
+      episodeLabelEl.textContent = 'Episode you stopped at';
+    } else if(status === 'upToDate'){
+      seasonLabelEl.textContent = "Season you're caught up to";
+      episodeLabelEl.textContent = "Episode you're caught up to";
+    } else {
+      seasonLabelEl.textContent = "Season you're on";
+      episodeLabelEl.textContent = "Episode you're on";
+    }
+  }
+
+  function resetForm(){
+    editingShow = null;
+    editingOriginalStatus = null;
+    submitAddBtn.textContent = 'Add Show';
+    titleInput.value = '';
+    platformSelect.value = '';
+    seasonInput.value = 1;
+    episodeInput.value = 1;
+    releaseDateInput.value = '';
+    setSelectedStatus('watching');
+    clearLookupUi();
+    refreshFieldVisibility();
+  }
+
+  function openAddPanel(){
+    addPanel.classList.add('open');
+    titleInput.focus();
+  }
+
+  // Adds a real <option> to the platform select for a name it doesn't
+  // already have (used only for legacy custom-named shows, see below).
+  function ensurePlatformOption(name){
+    var exists = Array.prototype.some.call(platformSelect.options, function(o){ return o.value === name; });
+    if(!exists){
+      var opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      platformSelect.appendChild(opt);
+    }
+  }
+
+  // Opens the same panel pre-filled with an existing show's details. Lets
+  // you correct a title, platform, season/episode, or release date, and
+  // also lets you correct the status itself (e.g. it was added as "haven't
+  // started" but should've been "upcoming") by changing the radio.
+  function openEditPanel(show){
+    editingShow = show;
+    editingOriginalStatus = classifyShowStatus(show);
+    submitAddBtn.textContent = 'Save Changes';
+
+    titleInput.value = show.title;
+
+    var knownPreset = ['Apple TV+', 'Disney+ / Hulu', 'HBO', 'Hayu', 'Netflix', 'Paramount+', 'Prime Video', 'Other'];
+    if(knownPreset.indexOf(show.platform) === -1){
+      // Legacy safety net: a show saved under a one-off custom platform
+      // name from before the dropdown's free-text option was removed.
+      // Add it as a real option on the fly so editing still shows and
+      // preserves the correct value, without reintroducing that field.
+      ensurePlatformOption(show.platform);
+    }
+    platformSelect.value = show.platform;
+
+    setSelectedStatus(editingOriginalStatus);
+    if(editingOriginalStatus === 'upcoming'){
+      releaseDateInput.value = show.releaseDate || '';
+    } else if(editingOriginalStatus === 'dnf'){
+      seasonInput.value = show.dnfSeason || show.season || 1;
+      episodeInput.value = show.dnfEpisode || show.episode || 1;
+    } else if(editingOriginalStatus !== 'completed'){
+      // Covers both actively-watching and caught-up shows: editing either
+      // just corrects the season/episode number directly, as long as the
+      // status radio itself isn't changed.
+      seasonInput.value = show.season || 1;
+      episodeInput.value = show.episode || 1;
+    }
+    refreshFieldVisibility();
+
+    clearLookupUi();
+    if(show.episodesPerSeason && show.totalSeasons){
+      pendingLookup = {
+        tvmazeId: show.tvmazeId,
+        showStatus: show.showStatus,
+        episodesPerSeason: show.episodesPerSeason,
+        totalSeasons: show.totalSeasons,
+        episodeAirDates: show.episodeAirDates || {},
+        episodeAirInfo: show.episodeAirInfo || null,
+        network: show.network || null
+      };
+      showLookupMatch(show.title, '', show.showStatus || 'unknown status', show.episodesPerSeason, show.totalSeasons);
+    }
+
+    addPanel.classList.add('open');
+    titleInput.focus();
+  }
+
+  openAddBtn.addEventListener('click', function(){
+    resetForm();
+    openAddPanel();
+  });
+  cancelAddBtn.addEventListener('click', function(){
+    addPanel.classList.remove('open');
+    resetForm();
+  });
+  Array.prototype.forEach.call(statusRadioGroup.querySelectorAll('input[name="addStatus"]'), function(radio){
+    radio.addEventListener('change', function(){
+      refreshFieldVisibility();
+      autofillUpToDateSeasonEpisode();
+    });
+  });
+
+  submitAddBtn.addEventListener('click', function(){
+    var title = titleInput.value.trim();
+    if(!title){
+      titleInput.focus();
+      return;
+    }
+    var platform = platformSelect.value;
+    if(!platform){
+      platformSelect.focus();
+      return;
+    }
+    var status = getSelectedStatus();
+
+    if(editingShow){
+      editingShow.title = title;
+      editingShow.platform = platform;
+
+      if(status === editingOriginalStatus){
+        // Status radio wasn't changed: just correct details within the
+        // current status, leaving caughtUp/completed/etc exactly as they
+        // were (e.g. correcting a caught-up show's season stays caught up).
+        if(status === 'upcoming'){
+          editingShow.releaseDate = releaseDateInput.value || null;
+        } else if(status === 'upToDate'){
+          editingShow.season = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+          editingShow.episode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+          var editResume = computeResumePoint(editingShow);
+          editingShow.resumeSeason = editResume.season;
+          editingShow.resumeEpisode = editResume.episode;
+        } else if(status === 'dnf'){
+          editingShow.dnfSeason = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+          editingShow.dnfEpisode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+          editingShow.season = editingShow.dnfSeason;
+          editingShow.episode = editingShow.dnfEpisode;
+        } else if(status !== 'completed'){
+          editingShow.season = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+          editingShow.episode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+        }
+      } else {
+        // Status radio was changed: re-derive the show's category flags
+        // to match, the same way adding a new show in that status would.
+        editingShow.upcoming = false;
+        editingShow.completed = false;
+        editingShow.completedStatus = null;
+        editingShow.dnfSeason = null;
+        editingShow.dnfEpisode = null;
+        editingShow.caughtUp = false;
+        editingShow.nextSeasonDate = null;
+        editingShow.resumeSeason = null;
+        editingShow.resumeEpisode = null;
+
+        if(status === 'upcoming'){
+          editingShow.upcoming = true;
+          editingShow.started = false;
+          editingShow.season = 1;
+          editingShow.episode = 1;
+          editingShow.releaseDate = releaseDateInput.value || null;
+        } else if(status === 'completed'){
+          editingShow.completed = true;
+          editingShow.completedStatus = 'finished';
+          editingShow.started = true;
+          editingShow.season = 1;
+          editingShow.episode = 1;
+          editingShow.releaseDate = null;
+        } else if(status === 'dnf'){
+          editingShow.completed = true;
+          editingShow.completedStatus = 'dnf';
+          editingShow.started = true;
+          editingShow.dnfSeason = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+          editingShow.dnfEpisode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+          editingShow.season = editingShow.dnfSeason;
+          editingShow.episode = editingShow.dnfEpisode;
+          editingShow.releaseDate = null;
+        } else if(status === 'notStarted'){
+          editingShow.started = false;
+          editingShow.season = 1;
+          editingShow.episode = 1;
+          editingShow.releaseDate = null;
+        } else if(status === 'upToDate'){
+          editingShow.started = true;
+          editingShow.caughtUp = true;
+          editingShow.season = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+          editingShow.episode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+          editingShow.releaseDate = null;
+          var newResume = computeResumePoint(editingShow);
+          editingShow.resumeSeason = newResume.season;
+          editingShow.resumeEpisode = newResume.episode;
+        } else {
+          editingShow.started = true;
+          editingShow.season = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+          editingShow.episode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+          editingShow.releaseDate = null;
+        }
+      }
+
+      if(pendingLookup){
+        editingShow.tvmazeId = pendingLookup.tvmazeId;
+        editingShow.showStatus = pendingLookup.showStatus;
+        editingShow.episodesPerSeason = pendingLookup.episodesPerSeason;
+        editingShow.totalSeasons = pendingLookup.totalSeasons;
+        editingShow.episodeAirDates = pendingLookup.episodeAirDates;
+        editingShow.episodeAirInfo = pendingLookup.episodeAirInfo || null;
+        editingShow.network = pendingLookup.network || null;
+        editingShow.avgRuntimeMinutes = pendingLookup.avgRuntimeMinutes;
+        if(!editingShow.airDateOverrides) editingShow.airDateOverrides = {};
+      }
+      settleUpToDateAgainstShowStatus(editingShow, true);
+      autofillNextSeasonDate(editingShow);
+      saveShows();
+      addPanel.classList.remove('open');
+      resetForm();
+      render();
+      return;
+    }
+
+    if(status === 'upToDate'){
+      var utdSeason = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+      var utdEpisode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+      var newUtdShow = {
+        id: uid(),
+        title: title,
+        platform: platform,
+        started: true,
+        season: utdSeason,
+        episode: utdEpisode,
+        caughtUp: true,
+        nextSeasonDate: null,
+        resumeSeason: null,
+        resumeEpisode: null,
+        upcoming: false,
+        releaseDate: null,
+        completed: false,
+        completedStatus: null,
+        dnfSeason: null,
+        dnfEpisode: null,
+        tvmazeId: pendingLookup ? pendingLookup.tvmazeId : null,
+        showStatus: pendingLookup ? pendingLookup.showStatus : null,
+        episodesPerSeason: pendingLookup ? pendingLookup.episodesPerSeason : null,
+        totalSeasons: pendingLookup ? pendingLookup.totalSeasons : null,
+        episodeAirDates: pendingLookup ? pendingLookup.episodeAirDates : null,
+        episodeAirInfo: pendingLookup ? (pendingLookup.episodeAirInfo || null) : null,
+        network: pendingLookup ? (pendingLookup.network || null) : null,
+        avgRuntimeMinutes: pendingLookup ? pendingLookup.avgRuntimeMinutes : null,
+        airDateOverrides: {},
+        rewatchInProgress: false,
+        rewatchFrontierSeason: null,
+        rewatchFrontierEpisode: null,
+        rewatchPassCounts: [],
+        rewatchStoppedSeason: null,
+        rewatchStoppedEpisode: null,
+        originalWatchEpisodeCount: null,
+        // Up to date adds never get a starting-point exclusion: being
+        // caught up means every released episode has already been seen.
+        startingPointSeason: null,
+        startingPointEpisode: null
+      };
+      var utdResume = computeResumePoint(newUtdShow);
+      newUtdShow.resumeSeason = utdResume.season;
+      newUtdShow.resumeEpisode = utdResume.episode;
+      settleUpToDateAgainstShowStatus(newUtdShow, true);
+      autofillNextSeasonDate(newUtdShow);
+      shows.push(newUtdShow);
+    } else if(status === 'completed'){
+      shows.push({
+        id: uid(),
+        title: title,
+        platform: platform,
+        started: true,
+        season: 1,
+        episode: 1,
+        caughtUp: false,
+        nextSeasonDate: null,
+        resumeSeason: null,
+        resumeEpisode: null,
+        upcoming: false,
+        releaseDate: null,
+        completed: true,
+        completedStatus: 'finished',
+        dnfSeason: null,
+        dnfEpisode: null,
+        tvmazeId: pendingLookup ? pendingLookup.tvmazeId : null,
+        showStatus: pendingLookup ? pendingLookup.showStatus : null,
+        episodesPerSeason: pendingLookup ? pendingLookup.episodesPerSeason : null,
+        totalSeasons: pendingLookup ? pendingLookup.totalSeasons : null,
+        episodeAirDates: pendingLookup ? pendingLookup.episodeAirDates : null,
+        episodeAirInfo: pendingLookup ? (pendingLookup.episodeAirInfo || null) : null,
+        network: pendingLookup ? (pendingLookup.network || null) : null,
+        avgRuntimeMinutes: pendingLookup ? pendingLookup.avgRuntimeMinutes : null,
+        airDateOverrides: {},
+        rewatchInProgress: false,
+        rewatchFrontierSeason: null,
+        rewatchFrontierEpisode: null,
+        rewatchPassCounts: [],
+        rewatchStoppedSeason: null,
+        rewatchStoppedEpisode: null,
+        originalWatchEpisodeCount: null,
+        startingPointSeason: null,
+        startingPointEpisode: null
+      });
+    } else if(status === 'dnf'){
+      var dnfAddSeason = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+      var dnfAddEpisode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+      shows.push({
+        id: uid(),
+        title: title,
+        platform: platform,
+        started: true,
+        season: dnfAddSeason,
+        episode: dnfAddEpisode,
+        caughtUp: false,
+        nextSeasonDate: null,
+        resumeSeason: null,
+        resumeEpisode: null,
+        upcoming: false,
+        releaseDate: null,
+        completed: true,
+        completedStatus: 'dnf',
+        dnfSeason: dnfAddSeason,
+        dnfEpisode: dnfAddEpisode,
+        tvmazeId: pendingLookup ? pendingLookup.tvmazeId : null,
+        showStatus: pendingLookup ? pendingLookup.showStatus : null,
+        episodesPerSeason: pendingLookup ? pendingLookup.episodesPerSeason : null,
+        totalSeasons: pendingLookup ? pendingLookup.totalSeasons : null,
+        episodeAirDates: pendingLookup ? pendingLookup.episodeAirDates : null,
+        episodeAirInfo: pendingLookup ? (pendingLookup.episodeAirInfo || null) : null,
+        network: pendingLookup ? (pendingLookup.network || null) : null,
+        avgRuntimeMinutes: pendingLookup ? pendingLookup.avgRuntimeMinutes : null,
+        airDateOverrides: {},
+        rewatchInProgress: false,
+        rewatchFrontierSeason: null,
+        rewatchFrontierEpisode: null,
+        rewatchPassCounts: [],
+        rewatchStoppedSeason: null,
+        rewatchStoppedEpisode: null,
+        originalWatchEpisodeCount: null,
+        startingPointSeason: null,
+        startingPointEpisode: null
+      });
+    } else if(status === 'upcoming'){
+      shows.push({
+        id: uid(),
+        title: title,
+        platform: platform,
+        started: false,
+        season: 1,
+        episode: 1,
+        caughtUp: false,
+        nextSeasonDate: null,
+        resumeSeason: null,
+        resumeEpisode: null,
+        upcoming: true,
+        releaseDate: releaseDateInput.value || null,
+        completed: false,
+        completedStatus: null,
+        dnfSeason: null,
+        dnfEpisode: null,
+        tvmazeId: pendingLookup ? pendingLookup.tvmazeId : null,
+        showStatus: pendingLookup ? pendingLookup.showStatus : null,
+        episodesPerSeason: pendingLookup ? pendingLookup.episodesPerSeason : null,
+        totalSeasons: pendingLookup ? pendingLookup.totalSeasons : null,
+        episodeAirDates: pendingLookup ? pendingLookup.episodeAirDates : null,
+        episodeAirInfo: pendingLookup ? (pendingLookup.episodeAirInfo || null) : null,
+        network: pendingLookup ? (pendingLookup.network || null) : null,
+        avgRuntimeMinutes: pendingLookup ? pendingLookup.avgRuntimeMinutes : null,
+        airDateOverrides: {},
+        rewatchInProgress: false,
+        rewatchFrontierSeason: null,
+        rewatchFrontierEpisode: null,
+        rewatchPassCounts: [],
+        rewatchStoppedSeason: null,
+        rewatchStoppedEpisode: null,
+        originalWatchEpisodeCount: null,
+        startingPointSeason: null,
+        startingPointEpisode: null
+      });
+    } else {
+      var started = status !== 'notStarted';
+      var addSeason = started ? Math.max(1, parseInt(seasonInput.value, 10) || 1) : 1;
+      var addEpisode = started ? Math.max(1, parseInt(episodeInput.value, 10) || 1) : 1;
+      // Starting-point exclusion: only ever applied going forward, when a
+      // show is added starting somewhere other than S1E1 (e.g. joining a
+      // long-running show mid-run). Never applies retroactively to shows
+      // already in the list.
+      var hasCustomStart = started && (addSeason !== 1 || addEpisode !== 1);
+      shows.push({
+        id: uid(),
+        title: title,
+        platform: platform,
+        started: started,
+        season: addSeason,
+        episode: addEpisode,
+        caughtUp: false,
+        nextSeasonDate: null,
+        resumeSeason: null,
+        resumeEpisode: null,
+        upcoming: false,
+        releaseDate: null,
+        completed: false,
+        completedStatus: null,
+        dnfSeason: null,
+        dnfEpisode: null,
+        tvmazeId: pendingLookup ? pendingLookup.tvmazeId : null,
+        showStatus: pendingLookup ? pendingLookup.showStatus : null,
+        episodesPerSeason: pendingLookup ? pendingLookup.episodesPerSeason : null,
+        totalSeasons: pendingLookup ? pendingLookup.totalSeasons : null,
+        episodeAirDates: pendingLookup ? pendingLookup.episodeAirDates : null,
+        episodeAirInfo: pendingLookup ? (pendingLookup.episodeAirInfo || null) : null,
+        network: pendingLookup ? (pendingLookup.network || null) : null,
+        avgRuntimeMinutes: pendingLookup ? pendingLookup.avgRuntimeMinutes : null,
+        airDateOverrides: {},
+        rewatchInProgress: false,
+        rewatchFrontierSeason: null,
+        rewatchFrontierEpisode: null,
+        rewatchPassCounts: [],
+        rewatchStoppedSeason: null,
+        rewatchStoppedEpisode: null,
+        originalWatchEpisodeCount: null,
+        startingPointSeason: hasCustomStart ? addSeason : null,
+        startingPointEpisode: hasCustomStart ? addEpisode : null
+      });
+    }
+    saveShows();
+    addPanel.classList.remove('open');
+    resetForm();
+    render();
+  });
+
+  titleInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') submitAddBtn.click();
+  });
+
+  var searchInputField = document.getElementById('searchInput');
+  searchInputField.addEventListener('input', render);
+
+  // On launch, quietly re-fetches episode data for every show already
+  // matched to TVMaze, so newly-confirmed episode dates (a network
+  // announcing next week's air date, say) show up without the person
+  // having to manually re-run "Look up" on each show. Requests are spaced
+  // out to stay well under TVMaze's rate limit. Fails silently if offline;
+  // this is a convenience refresh, not something that should interrupt
+  // startup or nag about connectivity.
+  // Background data refreshes (TVMaze polling, the hourly auto-promotion
+  // sweep, tab refocus) call this instead of render() directly. A plain
+  // render() tears down and rebuilds the whole shelf, which was slamming
+  // shut any date picker someone had open mid-entry (e.g. typing in a new
+  // season's air date) every time a show's TVMaze data happened to refresh
+  // in the background. While any air-date pill is actively being filled
+  // in, the redraw is skipped; the data is still saved underneath, and the
+  // view catches up as soon as that entry is finished or cancelled.
+  function scheduleUiRefresh(){
+    if(Object.keys(pendingDateEntry).length) return;
+    render();
+  }
+
+  var tvMazeRefreshInProgress = false;
+  var tvMazeRefreshQueued = false;
+  // onlyMissing = true refreshes just the shows with no schedule data yet,
+  // which is what a show arriving from the other device via sync looks like
+  // (the heavy per-episode data is left out of the sync file and rebuilt
+  // here from TVMaze instead).
+  function refreshTvMazeDataOnLaunch(onlyMissing){
+    // Launch-only now (no periodic or tab-refocus re-fetch -- see the
+    // note further down where the old setInterval/visibilitychange calls
+    // used to live). Skips starting a second pass on top of one still in
+    // progress, though with no recurring trigger left that's mostly a
+    // safety net now rather than something that fires often.
+    if(tvMazeRefreshInProgress){
+      if(onlyMissing) tvMazeRefreshQueued = true;
+      return;
+    }
+    tvMazeRefreshInProgress = true;
+
+    // Finished-completed shows are now refreshed too (so a renewal can be
+    // detected), but a DNF'd show never is \u2014 the person deliberately
+    // stopped watching it, so its schedule shouldn't even be checked.
+    var toRefresh = shows.filter(function(s){
+      return s.tvmazeId && !(s.completed && s.completedStatus === 'dnf') &&
+        (!onlyMissing || !s.episodeAirInfo);
+    });
+    var i = 0;
+
+    function refreshNext(){
+      if(i >= toRefresh.length){
+        tvMazeRefreshInProgress = false;
+        if(tvMazeRefreshQueued){
+          tvMazeRefreshQueued = false;
+          refreshTvMazeDataOnLaunch(true);
+        }
+        return;
+      }
+      var show = toRefresh[i];
+      i++;
+
+      var oldStatus = show.showStatus;
+      var wasCompletedFinished = show.completed && show.completedStatus === 'finished';
+      var wasCaughtUp = show.caughtUp;
+      var hadDateBefore = !!show.nextSeasonDate;
+      var priorSeason = show.season;
+      var priorEpisode = show.episode;
+
+      fetch('https://api.tvmaze.com/shows/' + show.tvmazeId + '?embed=episodes')
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(data){
+          if(!data) return;
+          var episodes = (data._embedded && data._embedded.episodes) || [];
+          var perSeason = {};
+          var airDates = {};
+          var runtimeSum = 0, runtimeCount = 0;
+          episodes.forEach(function(ep){
+            if(!ep.season || !ep.number) return;
+            if(!perSeason[ep.season] || ep.number > perSeason[ep.season]){
+              perSeason[ep.season] = ep.number;
+            }
+            if(ep.airdate) airDates['S' + ep.season + 'E' + ep.number] = ep.airdate;
+            if(typeof ep.runtime === 'number' && ep.runtime > 0){
+              runtimeSum += ep.runtime;
+              runtimeCount++;
+            }
+          });
+          var totalSeasons = Object.keys(perSeason).reduce(function(max, k){
+            return Math.max(max, parseInt(k, 10));
+          }, 0);
+          if(totalSeasons === 0) return;
+
+          show.episodesPerSeason = perSeason;
+          show.totalSeasons = totalSeasons;
+          show.showStatus = data.status || null;
+          show.episodeAirDates = airDates;
+          show.episodeAirInfo = buildAirInfo(episodes);
+          show.network = (data.network && data.network.name) || (data.webChannel && data.webChannel.name) || show.network || null;
+          applyDropRules(show);
+          show.avgRuntimeMinutes = runtimeCount > 0 ? Math.round(runtimeSum / runtimeCount) :
+            (data.averageRuntime || data.runtime || show.avgRuntimeMinutes);
+          if(!show.airDateOverrides) show.airDateOverrides = {};
+
+          var transitioned = false;
+
+          // Renewal: a show marked Finished (never DNF'd) turns out to be
+          // coming back. Un-completes it and settles it back at its old
+          // position: Up to date if nothing new has actually dropped yet,
+          // Currently Watching if a new season is already out.
+          if(wasCompletedFinished && oldStatus && oldStatus !== 'Running' && show.showStatus === 'Running'){
+            show.completed = false;
+            show.completedStatus = null;
+            settleShowAtPosition(show, priorSeason, priorEpisode);
+            addBannerItem(show.title + ' has been renewed \u2014 moved to ' +
+              (show.caughtUp ? 'Up to Date' : 'Currently Watching'));
+            transitioned = true;
+          }
+
+          // A show sitting in Up to date that TVMaze no longer lists as
+          // Running (Ended, To Be Determined, In Development, etc.) drops
+          // straight to Completed, since being caught up there already
+          // means every released episode has been seen and nothing more is
+          // confirmed on the way. A show still behind in Currently Watching
+          // is left alone here \u2014 it only completes once the person
+          // actually reaches the final episode (the existing Mark watched
+          // logic already handles that correctly on its own).
+          if(!transitioned && wasCaughtUp && oldStatus === 'Running' && show.showStatus && show.showStatus !== 'Running'){
+            show.completed = true;
+            show.completedStatus = 'finished';
+            show.caughtUp = false;
+            addBannerItem(show.title + ' is no longer Running (' + show.showStatus + ') — moved to Completed');
+            transitioned = true;
+          }
+
+          if(!transitioned){
+            autofillNextSeasonDate(show);
+            if(wasCaughtUp && !hadDateBefore && show.nextSeasonDate){
+              var rs = show.resumeSeason || ((show.season || 1) + 1);
+              var re = show.resumeEpisode || 1;
+              addBannerItem(show.title + '\u2019s next episodes now have a date \u2014 S' + rs + 'E' + re + ' airs ' + show.nextSeasonDate);
+            }
+          }
+
+          saveShows(true);
+          scheduleUiRefresh();
+        })
+        .catch(function(){
+          // Offline or TVMaze unreachable; just skip refreshing this show.
+        })
+        .then(function(){
+          setTimeout(refreshNext, 350);
+        });
+    }
+
+    refreshNext();
+  }
+
+  loadShows();
+  render();
+
+  // Promotions, banners and the TVMaze refresh wait for the first sync pull
+  // (see the end of the script), so they act on the latest list rather than
+  // a stale local copy that the other device has since moved past.
+  var launchChecksDone = false;
+  function runLaunchChecks(){
+    if(launchChecksDone) return;
+    launchChecksDone = true;
+    var promoted = checkAutoPromotions();
+    scanEpisodesAiredToday();
+    scanUpcomingReleased();
+    if(promoted) scheduleUiRefresh();
+    refreshTvMazeDataOnLaunch();
+  }
+
+  document.getElementById('notifBannerClose').addEventListener('click', function(){
+    bannerDismissed = true;
+    renderBanner();
+  });
+
+  // Catch a date arriving while the page is left open, and while it's
+  // in a background tab that gets refocused later. Purely local (no
+  // TVMaze calls), so it's cheap to keep running.
+  // Checks every minute so an episode moves into Continue Watching close
+  // to its real UK drop time, and flags anything that
+  // dropped since the last check on a show being actively watched.
+  var lastDropCheck = Date.now();
+  function checkNewDrops(){
+    var now = Date.now();
+    var dropped = false;
+    shows.forEach(function(s){
+      if(!s.episodeDropTimes) return;
+      Object.keys(s.episodeDropTimes).forEach(function(key){
+        var t = s.episodeDropTimes[key];
+        if(t <= lastDropCheck || t > now) return;
+        if(s.airDateOverrides && s.airDateOverrides[key]) return;
+        dropped = true;
+        if(!s.started || s.caughtUp || s.upcoming || s.completed) return;
+        var m = /^S(\d+)E(\d+)$/.exec(key);
+        if(m && parseInt(m[1], 10) === s.season && parseInt(m[2], 10) > s.episode){
+          addBannerItem(s.title + ' \u00b7 S' + m[1] + 'E' + m[2] + ' just dropped');
+          bannerDismissed = false;
+          renderBanner();
+        }
+      });
+    });
+    lastDropCheck = now;
+    return dropped;
+  }
+  setInterval(function(){
+    var promoted = checkAutoPromotions();
+    var dropped = checkNewDrops();
+    if(promoted || dropped) scheduleUiRefresh();
+  }, 60 * 1000);
+
+  // TVMaze data is refreshed once at launch only (see refreshTvMazeDataOnLaunch()
+  // above) -- no periodic or tab-refocus re-fetch, since that live-refresh was
+  // the thing repeatedly interrupting an in-progress date entry. Reopening the
+  // app (or manually re-matching a show) is what picks up new TVMaze data now.
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible'){
+      var promoted = checkAutoPromotions();
+      var dropped = checkNewDrops();
+      if(promoted || dropped) scheduleUiRefresh();
+    }
+  });
+
+  // ---- Upcoming calendar ----
+  var CAL_STORAGE_KEY = 'tv-tracker-calendar-v1';
+  var calendarEntries = [];
+
+  function loadCalendarEntries(){
+    try{
+      var raw = localStorage.getItem(CAL_STORAGE_KEY);
+      calendarEntries = raw ? JSON.parse(raw) : [];
+    }catch(e){
+      calendarEntries = [];
+    }
+  }
+  function saveCalendarEntries(){
+    var syncChanged = trackCalendarChanges();
+    writeCalendarToStorage();
+    noteUndoChange(false);
+    if(syncChanged) scheduleSyncPush();
+  }
+  function writeCalendarToStorage(){
+    try{
+      localStorage.setItem(CAL_STORAGE_KEY, JSON.stringify(calendarEntries));
+    }catch(e){
+      // storage unavailable; state still holds for this session
+    }
+  }
+
+  var calendarOverlay = document.getElementById('calendarOverlay');
+  var calMonthLabel = document.getElementById('calMonthLabel');
+  var calWeekdays = document.getElementById('calWeekdays');
+  var calGrid = document.getElementById('calGrid');
+  var calDayPanel = document.getElementById('calDayPanel');
+  var upcomingBtn = document.getElementById('upcomingBtn');
+  var calPrevBtn = document.getElementById('calPrevBtn');
+  var calNextBtn = document.getElementById('calNextBtn');
+  var calCloseBtn = document.getElementById('calCloseBtn');
+
+  var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var calView = { year: 0, month: 0 }; // month is 0-indexed
+  var calSelectedDate = null;
+
+  function isoDate(d){
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  // Builds the list of calendar pills (manual entries + season premieres)
+  // that fall within the given year/month.
+  // Groups every show's known episode dates into one entry per show+date,
+  // so a bulk-release day (all of a season at once) or a same-day double
+  // episode shows up as a single compact pill instead of one per episode.
+  // Returns { dateStr: [ {show, keys:[...], label, color} ] }.
+  function computeEpisodeEventGroups(){
+    var byDate = {};
+    shows.forEach(function(s, idx){
+      if(!s.episodeAirDates) return;
+      // A DNF'd show's future air dates are no longer of interest \u2014
+      // stop showing them on the calendar until (if ever) it's moved back
+      // to tracking.
+      if(s.completed && s.completedStatus === 'dnf') return;
+      var color = colorForPlatform(s.platform, idx);
+      var byShowDate = {};
+      Object.keys(s.episodeAirDates).forEach(function(key){
+        if(s.airDateOverrides && s.airDateOverrides[key]) return;
+        var match = /^S(\d+)E(\d+)$/.exec(key);
+        if(!match) return;
+        var date = s.episodeAirDates[key];
+        if(!byShowDate[date]) byShowDate[date] = [];
+        byShowDate[date].push({ key: key, season: parseInt(match[1], 10), number: parseInt(match[2], 10) });
+      });
+      Object.keys(byShowDate).forEach(function(date){
+        var eps = byShowDate[date].sort(function(a, b){ return a.number - b.number; });
+        var season = eps[0].season;
+        var numbers = eps.map(function(e){ return e.number; });
+        var keys = eps.map(function(e){ return e.key; });
+        var label;
+        if(numbers.length === 1){
+          label = s.title + ' \u00b7 S' + season + 'E' + numbers[0];
+        } else if(numbers.length === 2){
+          label = s.title + ' \u00b7 S' + season + ' E' + numbers[0] + '&' + numbers[1];
+        } else {
+          label = s.title + ' \u00b7 S' + season + ' E' + numbers[0] + '-' + numbers[numbers.length - 1];
+        }
+        if(s.episodeDropTimes){
+          var firstDrop = null;
+          keys.forEach(function(k){
+            var t = s.episodeDropTimes[k];
+            if(typeof t === 'number' && (firstDrop === null || t < firstDrop)) firstDrop = t;
+          });
+          if(firstDrop !== null) label += ' \u00b7 ' + ukTimeOf(firstDrop);
+        }
+        if(!byDate[date]) byDate[date] = [];
+        byDate[date].push({ show: s, keys: keys, label: label, color: color });
+      });
+    });
+    return byDate;
+  }
+
+  function eventsForMonth(year, month){
+    var byDate = {};
+
+    function addEvent(dateStr, label, color){
+      if(!byDate[dateStr]) byDate[dateStr] = [];
+      byDate[dateStr].push({ label: label, color: color });
+    }
+
+    function inMonth(dateStr){
+      var d = new Date(dateStr + 'T00:00:00');
+      return d.getFullYear() === year && d.getMonth() === month;
+    }
+
+    var groups = computeEpisodeEventGroups();
+    Object.keys(groups).forEach(function(date){
+      if(!inMonth(date)) return;
+      groups[date].forEach(function(g){ addEvent(date, g.label, g.color); });
+    });
+
+    shows.forEach(function(s, idx){
+      if(s.episodeAirDates) return; // already covered by the grouped schedule above
+      var color = colorForPlatform(s.platform, idx);
+
+      if(s.caughtUp && s.nextSeasonDate && inMonth(s.nextSeasonDate)){
+        var resumeSeason = s.resumeSeason || ((s.season || 1) + 1);
+        var resumeEpisode = s.resumeEpisode || 1;
+        addEvent(s.nextSeasonDate, s.title + ' \u00b7 S' + resumeSeason + 'E' + resumeEpisode, color);
+      }
+      if(s.upcoming && s.releaseDate && inMonth(s.releaseDate)){
+        addEvent(s.releaseDate, s.title, color);
+      }
+    });
+
+    calendarEntries.forEach(function(entry){
+      if(!inMonth(entry.date)) return;
+      var idx = shows.findIndex(function(s){ return s.id === entry.showId; });
+      if(idx === -1) return;
+      addEvent(entry.date, shows[idx].title, colorForPlatform(shows[idx].platform, idx));
+    });
+
+    return byDate;
+  }
+
+  // Returns the auto-generated (TVMaze-sourced) episode entries that fall
+  // on one specific date, for the day panel's "Remove" affordance. Unlike
+  // manual calendarEntries, these aren't stored rows; they're computed
+  // live from each show's episodeAirDates, so "removing" one just adds an
+  // override (covering every episode in that batch) rather than deleting
+  // a stored entry.
+  function autoEntriesForDate(dateStr){
+    var groups = computeEpisodeEventGroups();
+    return groups[dateStr] || [];
+  }
+
+  function renderCalendar(){
+    var year = calView.year;
+    var month = calView.month;
+    calMonthLabel.textContent = MONTH_NAMES[month] + ' ' + year;
+
+    calWeekdays.innerHTML = '';
+    for(var w = 0; w < 7; w++){
+      // Week starts Monday.
+      var span = document.createElement('span');
+      span.textContent = WEEKDAY_SHORT[(w + 1) % 7];
+      calWeekdays.appendChild(span);
+    }
+
+    var events = eventsForMonth(year, month);
+    var firstOfMonth = new Date(year, month, 1);
+    var startOffset = (firstOfMonth.getDay() + 6) % 7; // Monday = 0
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var today = new Date();
+    var todayStr = isoDate(today);
+
+    calGrid.innerHTML = '';
+
+    var totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+    var cursor = new Date(year, month, 1 - startOffset);
+
+    var _loop = function(cellStr, cellDate){
+      var cell = document.createElement('div');
+      cell.className = 'cal-day';
+      if(cellDate.getMonth() !== month) cell.className += ' outside';
+      if(cellStr === todayStr) cell.className += ' today';
+      if(cellStr === calSelectedDate) cell.className += ' selected';
+
+      var num = document.createElement('div');
+      num.className = 'cal-day-num';
+      num.textContent = cellDate.getDate();
+      cell.appendChild(num);
+
+      (events[cellStr] || []).forEach(function(evt){
+        var pill = document.createElement('div');
+        pill.className = 'cal-event';
+        pill.style.background = evt.color;
+        pill.textContent = evt.label;
+        cell.appendChild(pill);
+      });
+
+      cell.addEventListener('click', function(){
+        calSelectedDate = cellStr;
+        renderCalendar();
+      });
+
+      calGrid.appendChild(cell);
+    };
+
+    for(var i = 0; i < totalCells; i++){
+      var cellDate = new Date(cursor);
+      _loop(isoDate(cellDate), cellDate);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    renderDayPanel();
+  }
+
+  function renderDayPanel(){
+    calDayPanel.innerHTML = '';
+
+    if(!calSelectedDate){
+      var hint = document.createElement('p');
+      hint.className = 'calendar-note';
+      hint.textContent = 'Click a day to add a show to it.';
+      calDayPanel.appendChild(hint);
+      return;
+    }
+
+    var d = new Date(calSelectedDate + 'T00:00:00');
+    var heading = document.createElement('h3');
+    heading.textContent = d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+    calDayPanel.appendChild(heading);
+
+    var addRow = document.createElement('div');
+    addRow.className = 'cal-add-row';
+
+    var select = document.createElement('select');
+    if(shows.length === 0){
+      var noneOpt = document.createElement('option');
+      noneOpt.textContent = 'Add a show first';
+      select.appendChild(noneOpt);
+      select.disabled = true;
+    } else {
+      var placeholderOpt = document.createElement('option');
+      placeholderOpt.value = '';
+      placeholderOpt.textContent = 'Select show to add manually\u2026';
+      placeholderOpt.disabled = true;
+      placeholderOpt.selected = true;
+      select.appendChild(placeholderOpt);
+      shows.slice().sort(function(a, b){
+        return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+      }).forEach(function(s){
+        var opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.title + ' \u00b7 ' + s.platform;
+        select.appendChild(opt);
+      });
+    }
+    addRow.appendChild(select);
+
+    var repeatWrap = document.createElement('div');
+    repeatWrap.className = 'cal-repeat-wrap';
+    var repeatLabel = document.createElement('label');
+    repeatLabel.textContent = 'Repeat weekly for';
+    repeatWrap.appendChild(repeatLabel);
+    var repeatInput = document.createElement('input');
+    repeatInput.type = 'number';
+    repeatInput.min = '1';
+    repeatInput.max = '52';
+    repeatInput.value = '1';
+    repeatInput.className = 'cal-repeat-input';
+    repeatWrap.appendChild(repeatInput);
+    var repeatSuffix = document.createElement('span');
+    repeatSuffix.textContent = 'week(s)';
+    repeatWrap.appendChild(repeatSuffix);
+    addRow.appendChild(repeatWrap);
+
+    var addBtn = document.createElement('button');
+    addBtn.className = 'btn-primary';
+    addBtn.textContent = 'Add';
+    addBtn.disabled = shows.length === 0;
+    addBtn.addEventListener('click', function(){
+      if(!select.value) return;
+      var weeks = Math.max(1, Math.min(52, parseInt(repeatInput.value, 10) || 1));
+      var baseDate = new Date(calSelectedDate + 'T00:00:00');
+      for(var i = 0; i < weeks; i++){
+        var d = new Date(baseDate);
+        d.setDate(d.getDate() + i * 7);
+        calendarEntries.push({ id: uid(), date: isoDate(d), showId: select.value });
+      }
+      saveCalendarEntries();
+      renderCalendar();
+    });
+    addRow.appendChild(addBtn);
+
+    calDayPanel.appendChild(addRow);
+
+    var dayEntries = calendarEntries.filter(function(e){ return e.date === calSelectedDate; });
+    if(dayEntries.length){
+      var list = document.createElement('div');
+      list.className = 'cal-entry-list';
+      dayEntries.forEach(function(entry){
+        var show = shows.find(function(s){ return s.id === entry.showId; });
+        var chip = document.createElement('div');
+        chip.className = 'cal-entry-chip';
+        var label = document.createElement('span');
+        label.textContent = show ? show.title : '(removed show)';
+        chip.appendChild(label);
+        var removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', function(){
+          calendarEntries = calendarEntries.filter(function(e){ return e.id !== entry.id; });
+          saveCalendarEntries();
+          renderCalendar();
+        });
+        chip.appendChild(removeBtn);
+        list.appendChild(chip);
+      });
+      calDayPanel.appendChild(list);
+    }
+
+    var autoEntries = autoEntriesForDate(calSelectedDate);
+    if(autoEntries.length){
+      var autoList = document.createElement('div');
+      autoList.className = 'cal-entry-list';
+      autoEntries.forEach(function(entry){
+        var chip = document.createElement('div');
+        chip.className = 'cal-entry-chip';
+        var label = document.createElement('span');
+        label.textContent = entry.label + ' (from TVMaze)';
+        chip.appendChild(label);
+        var removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.title = 'Hides this date; add it back manually on a different day if it moves.';
+        removeBtn.addEventListener('click', function(){
+          if(!entry.show.airDateOverrides) entry.show.airDateOverrides = {};
+          entry.keys.forEach(function(k){ entry.show.airDateOverrides[k] = true; });
+          saveShows();
+          renderCalendar();
+        });
+        chip.appendChild(removeBtn);
+        autoList.appendChild(chip);
+      });
+      calDayPanel.appendChild(autoList);
+    }
+  }
+
+  function openCalendar(){
+    var now = new Date();
+    calView.year = now.getFullYear();
+    calView.month = now.getMonth();
+    calSelectedDate = null;
+    renderCalendar();
+    calendarOverlay.classList.add('open');
+  }
+
+  upcomingBtn.addEventListener('click', openCalendar);
+  calCloseBtn.addEventListener('click', function(){
+    calendarOverlay.classList.remove('open');
+  });
+  calendarOverlay.addEventListener('click', function(e){
+    if(e.target === calendarOverlay) calendarOverlay.classList.remove('open');
+  });
+  calPrevBtn.addEventListener('click', function(){
+    calView.month -= 1;
+    if(calView.month < 0){ calView.month = 11; calView.year -= 1; }
+    renderCalendar();
+  });
+  calNextBtn.addEventListener('click', function(){
+    calView.month += 1;
+    if(calView.month > 11){ calView.month = 0; calView.year += 1; }
+    renderCalendar();
+  });
+
+  loadCalendarEntries();
+
+  // ---- Undo ----
+  // Every save is compared against a snapshot of the last saved state. Your
+  // own edits push the previous version of whatever changed (per show, plus
+  // the calendar) onto a stack; app-driven saves just move the snapshot
+  // forward. Saves made in the same click are merged into one undo step.
+  // The history lives for this session only and clears on reload.
+  var UNDO_LIMIT = 50;
+  var undoStack = [];
+  var undoBase = null;
+  var undoPending = false;
+  var undoTimer = null;
+  var undoRestoring = false;
+  var undoToastTimer = null;
+  var undoBtn = document.getElementById('undoBtn');
+  var undoToast = document.getElementById('undoToast');
+  var undoToastText = document.getElementById('undoToastText');
+  var undoToastBtn = document.getElementById('undoToastBtn');
+
+  function snapshotState(){
+    var map = {}, order = [];
+    shows.forEach(function(s){ map[s.id] = JSON.stringify(s); order.push(s.id); });
+    return { map: map, order: order, cal: JSON.stringify(calendarEntries) };
+  }
+
+  function noteUndoChange(auto){
+    if(!undoBase) return;
+    if(undoRestoring){ undoBase = snapshotState(); return; }
+    if(!auto) undoPending = true;
+    if(!undoTimer) undoTimer = setTimeout(commitUndo, 0);
+  }
+
+  function titleFromJson(json){
+    try{ return JSON.parse(json).title || 'a show'; }catch(e){ return 'a show'; }
+  }
+
+  function describeChange(base, now, ids, calChanged){
+    if(ids.length === 1){
+      var id = ids[0];
+      var before = base.map[id] ? JSON.parse(base.map[id]) : null;
+      var after = now.map[id] ? JSON.parse(now.map[id]) : null;
+      if(!before) return 'Added ' + after.title;
+      if(!after) return 'Removed ' + before.title;
+      if(after.completed && !before.completed) return 'Moved ' + after.title + ' to Completed';
+      if(!after.completed && before.completed) return 'Moved ' + after.title + ' back to watching';
+      if(after.caughtUp && !before.caughtUp) return after.title + ' is up to date';
+      if(after.season !== before.season || after.episode !== before.episode){
+        return after.title + ' now at S' + (after.season || 1) + 'E' + (after.episode || 1);
+      }
+      return 'Updated ' + after.title;
+    }
+    if(ids.length > 1) return 'Updated ' + ids.length + ' shows';
+    return calChanged ? 'Updated the calendar' : 'Updated your list';
+  }
+
+  function commitUndo(){
+    undoTimer = null;
+    var now = snapshotState();
+    if(undoPending && undoBase){
+      var ids = [];
+      var prevShows = {};
+      Object.keys(undoBase.map).forEach(function(id){
+        if(now.map[id] !== undoBase.map[id]){ ids.push(id); prevShows[id] = undoBase.map[id]; }
+      });
+      Object.keys(now.map).forEach(function(id){
+        if(!(id in undoBase.map)){ ids.push(id); prevShows[id] = null; }
+      });
+      var calChanged = now.cal !== undoBase.cal;
+      if(ids.length || calChanged){
+        var label = describeChange(undoBase, now, ids, calChanged);
+        undoStack.push({
+          label: label,
+          prevShows: prevShows,
+          prevOrder: undoBase.order,
+          prevCal: calChanged ? undoBase.cal : null
+        });
+        if(undoStack.length > UNDO_LIMIT) undoStack.shift();
+        showUndoToast(label);
+      }
+    }
+    undoBase = now;
+    undoPending = false;
+    updateUndoUi();
+  }
+
+  function undoLast(){
+    if(undoTimer){ clearTimeout(undoTimer); commitUndo(); }
+    var entry = undoStack.pop();
+    if(!entry) return;
+
+    Object.keys(entry.prevShows).forEach(function(id){
+      var idx = shows.findIndex(function(s){ return s.id === id; });
+      var prev = entry.prevShows[id];
+      if(prev === null){
+        if(idx >= 0) shows.splice(idx, 1);
+      } else if(idx >= 0){
+        shows[idx] = JSON.parse(prev);
+      } else {
+        shows.push(JSON.parse(prev));
+      }
+    });
+    var pos = {};
+    entry.prevOrder.forEach(function(id, i){ pos[id] = i; });
+    shows.sort(function(a, b){
+      var pa = a.id in pos ? pos[a.id] : Infinity;
+      var pb = b.id in pos ? pos[b.id] : Infinity;
+      return pa === pb ? 0 : (pa < pb ? -1 : 1);
+    });
+    if(entry.prevCal !== null) calendarEntries = JSON.parse(entry.prevCal);
+
+    undoRestoring = true;
+    saveShows();
+    saveCalendarEntries();
+    undoRestoring = false;
+
+    // Anything open is holding the old version of a show, so close it.
+    if(addPanel.classList.contains('open')){
+      addPanel.classList.remove('open');
+      resetForm();
+    }
+    render();
+    if(calendarOverlay.classList.contains('open')) renderCalendar();
+    updateUndoUi();
+    showUndoToast('Undid: ' + entry.label, true);
+  }
+
+  function updateUndoUi(){
+    var top = undoStack[undoStack.length - 1];
+    undoBtn.disabled = !top;
+    undoBtn.title = top ? 'Undo: ' + top.label : 'Nothing to undo';
+  }
+
+  function showUndoToast(text, isConfirmation){
+    undoToastText.textContent = text;
+    undoToastBtn.style.display = isConfirmation ? 'none' : '';
+    undoToast.classList.add('show');
+    clearTimeout(undoToastTimer);
+    undoToastTimer = setTimeout(function(){ undoToast.classList.remove('show'); }, isConfirmation ? 2500 : 6000);
+  }
+
+  undoBtn.addEventListener('click', undoLast);
+  undoToastBtn.addEventListener('click', undoLast);
+  document.addEventListener('keydown', function(e){
+    if(!(e.metaKey || e.ctrlKey) || e.shiftKey || e.key.toLowerCase() !== 'z') return;
+    var t = e.target;
+    if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    e.preventDefault();
+    undoLast();
+  });
+
+  undoBase = snapshotState();
+
+  // ---- Sync (private GitHub gist) ----
+  // Each device keeps its own local copy and the gist holds the shared one.
+  // Every sync pulls the gist, merges it with the local list, saves the
+  // result locally and pushes it back if anything differs. Merging is per
+  // show: whichever copy of a show was edited most recently wins, so changes
+  // to different shows on different devices never overwrite each other.
+  // Removed shows and calendar entries leave a dated tombstone so the
+  // removal reaches the other device instead of the show coming back.
+  // The token lives only in this device's storage, never in the file.
+  var SYNC_FILE = 'watchlist-sync.json';
+  var SYNC_STATE_KEY = 'tv-tracker-sync-v1';
+  var SYNC_API = 'https://api.github.com';
+  var TOMBSTONE_TTL_MS = 180 * 24 * 60 * 60 * 1000;
+  var SYNC_POLL_MS = 2 * 60 * 1000;
+  // TVMaze-derived fields: changes to these never count as an edit, since
+  // each device refreshes them on its own.
+  var SYNC_SKIP_FIELDS = { updatedAt: 1, episodeAirInfo: 1, episodeDropTimes: 1, episodeAirDates: 1,
+    episodesPerSeason: 1, totalSeasons: 1, showStatus: 1, network: 1, avgRuntimeMinutes: 1 };
+  // Large per-episode fields: kept out of the gist and rebuilt from TVMaze.
+  var SYNC_HEAVY_FIELDS = ['episodeAirInfo', 'episodeDropTimes', 'episodeAirDates'];
+
+  var syncState = loadSyncState();
+  var showFingerprints = null;
+  var calFingerprints = null;
+  var syncInFlight = null;
+  var syncAgain = false;
+  var syncPushTimer = null;
+  var syncStatus = { state: 'idle', message: '' };
+
+  function loadSyncState(){
+    var st = null;
+    try{ st = JSON.parse(localStorage.getItem(SYNC_STATE_KEY) || 'null'); }catch(e){}
+    st = st || {};
+    return {
+      token: st.token || null,
+      gistId: st.gistId || null,
+      lastSyncAt: st.lastSyncAt || null,
+      deleted: st.deleted || {},
+      calDeleted: st.calDeleted || {}
+    };
+  }
+  function saveSyncState(){
+    try{ localStorage.setItem(SYNC_STATE_KEY, JSON.stringify(syncState)); }catch(e){}
+  }
+  function syncConfigured(){ return !!(syncState.token && syncState.gistId); }
+
+  function canonical(v){
+    if(v === null || typeof v !== 'object') return JSON.stringify(v === undefined ? null : v);
+    if(Array.isArray(v)) return '[' + v.map(canonical).join(',') + ']';
+    return '{' + Object.keys(v).sort().filter(function(k){ return v[k] !== undefined; })
+      .map(function(k){ return JSON.stringify(k) + ':' + canonical(v[k]); }).join(',') + '}';
+  }
+  function fingerprintShow(s){
+    var o = {};
+    Object.keys(s).forEach(function(k){ if(!SYNC_SKIP_FIELDS[k]) o[k] = s[k]; });
+    return canonical(o);
+  }
+  function resetSyncFingerprints(){
+    showFingerprints = {};
+    shows.forEach(function(s){ showFingerprints[s.id] = fingerprintShow(s); });
+    calFingerprints = {};
+    (calendarEntries || []).forEach(function(e){ calFingerprints[e.id] = true; });
+  }
+
+  // Stamps updatedAt on any show whose own (non-TVMaze) data changed since
+  // the last save, and tombstones any show that disappeared.
+  function trackShowChanges(){
+    if(!showFingerprints) return false;
+    var now = Date.now(), next = {}, changed = false;
+    shows.forEach(function(s){
+      var fp = fingerprintShow(s);
+      next[s.id] = fp;
+      if(showFingerprints[s.id] !== fp){
+        s.updatedAt = now;
+        delete syncState.deleted[s.id];
+        changed = true;
+      }
+    });
+    Object.keys(showFingerprints).forEach(function(id){
+      if(!(id in next)){ syncState.deleted[id] = now; changed = true; }
+    });
+    showFingerprints = next;
+    if(changed) saveSyncState();
+    return changed;
+  }
+
+  function trackCalendarChanges(){
+    if(!calFingerprints) return false;
+    var now = Date.now(), next = {}, changed = false;
+    calendarEntries.forEach(function(e){
+      next[e.id] = true;
+      if(!calFingerprints[e.id]){
+        if(!e.addedAt || syncState.calDeleted[e.id]) e.addedAt = now;
+        delete syncState.calDeleted[e.id];
+        changed = true;
+      }
+    });
+    Object.keys(calFingerprints).forEach(function(id){
+      if(!next[id]){ syncState.calDeleted[id] = now; changed = true; }
+    });
+    calFingerprints = next;
+    if(changed) saveSyncState();
+    return changed;
+  }
+
+  function pruneTombstones(map){
+    var cutoff = Date.now() - TOMBSTONE_TTL_MS;
+    Object.keys(map).forEach(function(id){ if(map[id] < cutoff) delete map[id]; });
+  }
+
+  function buildSyncPayload(){
+    pruneTombstones(syncState.deleted);
+    pruneTombstones(syncState.calDeleted);
+    var outShows = shows.map(function(s){
+      var o = {};
+      Object.keys(s).forEach(function(k){ if(SYNC_HEAVY_FIELDS.indexOf(k) === -1) o[k] = s[k]; });
+      return o;
+    }).sort(function(a, b){ return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0); });
+    var outCal = calendarEntries.slice().sort(function(a, b){ return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0); });
+    return { version: 1, shows: outShows, deleted: syncState.deleted,
+      calendarEntries: outCal, calDeleted: syncState.calDeleted };
+  }
+
+  function mergeTombstones(local, remote){
+    Object.keys(remote || {}).forEach(function(id){
+      if(!(local[id] >= remote[id])) local[id] = remote[id];
+    });
+  }
+
+  // Merges the gist's copy into the local list. Returns true if the local
+  // list or calendar changed.
+  function mergeRemote(remote){
+    if(!remote || !Array.isArray(remote.shows)) return false;
+    mergeTombstones(syncState.deleted, remote.deleted);
+    mergeTombstones(syncState.calDeleted, remote.calDeleted);
+
+    var localById = {}, remoteById = {}, order = [];
+    shows.forEach(function(s){ localById[s.id] = s; order.push(s.id); });
+    remote.shows.forEach(function(r){
+      if(!r || !r.id) return;
+      remoteById[r.id] = r;
+      if(!localById[r.id]) order.push(r.id);
+    });
+
+    var changed = false, merged = [];
+    order.forEach(function(id){
+      var l = localById[id], r = remoteById[id];
+      var winner = (l && r) ? (((r.updatedAt || 0) >= (l.updatedAt || 0)) ? r : l) : (l || r);
+      var tomb = syncState.deleted[id];
+      if(tomb && tomb >= (winner.updatedAt || 0)){
+        if(l) changed = true;
+        return;
+      }
+      if(tomb) delete syncState.deleted[id];
+      if(winner === l || (l && fingerprintShow(l) === fingerprintShow(r))){
+        merged.push(l);
+        return;
+      }
+      var copy = JSON.parse(JSON.stringify(r));
+      if(l){
+        SYNC_HEAVY_FIELDS.forEach(function(k){ if(copy[k] == null && l[k] != null) copy[k] = l[k]; });
+        ['episodesPerSeason', 'totalSeasons', 'showStatus', 'network', 'avgRuntimeMinutes'].forEach(function(k){
+          if(copy[k] == null && l[k] != null) copy[k] = l[k];
+        });
+      }
+      normalizeShows([copy]);
+      merged.push(copy);
+      changed = true;
+    });
+
+    var localCal = {}, calOrder = [], remoteCal = {};
+    calendarEntries.forEach(function(e){ localCal[e.id] = e; calOrder.push(e.id); });
+    (Array.isArray(remote.calendarEntries) ? remote.calendarEntries : []).forEach(function(e){
+      if(!e || !e.id) return;
+      remoteCal[e.id] = e;
+      if(!localCal[e.id]) calOrder.push(e.id);
+    });
+    var mergedCal = [], calChanged = false;
+    calOrder.forEach(function(id){
+      var entry = localCal[id] || remoteCal[id];
+      var tomb = syncState.calDeleted[id];
+      if(tomb && tomb >= (entry.addedAt || 0)){
+        if(localCal[id]) calChanged = true;
+        return;
+      }
+      if(tomb) delete syncState.calDeleted[id];
+      if(!localCal[id]) calChanged = true;
+      mergedCal.push(localCal[id] || JSON.parse(JSON.stringify(entry)));
+    });
+
+    saveSyncState();
+    if(!changed && !calChanged) return false;
+
+    shows = merged;
+    calendarEntries = mergedCal;
+    shows.forEach(applyDropRules);
+    writeShowsToStorage();
+    writeCalendarToStorage();
+    resetSyncFingerprints();
+    noteUndoChange(true);
+
+    // An open edit panel may be holding a show that just got replaced.
+    if(editingShow){
+      var fresh = shows.find(function(s){ return s.id === editingShow.id; });
+      if(fresh){
+        editingShow = fresh;
+      } else {
+        addPanel.classList.remove('open');
+        resetForm();
+      }
+    }
+    scheduleUiRefresh();
+    if(calendarOverlay.classList.contains('open')) renderCalendar();
+    if(shows.some(function(s){ return s.tvmazeId && !s.episodeAirInfo; })) refreshTvMazeDataOnLaunch(true);
+    return true;
+  }
+
+  function githubFetch(path, opts){
+    opts = opts || {};
+    var headers = {
+      'Authorization': 'Bearer ' + syncState.token,
+      'Accept': 'application/vnd.github+json'
+    };
+    if(opts.body) headers['Content-Type'] = 'application/json';
+    return fetch(SYNC_API + path, {
+      method: opts.method || 'GET',
+      headers: headers,
+      body: opts.body || undefined,
+      cache: 'no-store'
+    }).then(function(r){
+      if(!r.ok){
+        var err = new Error('GitHub ' + r.status);
+        err.status = r.status;
+        throw err;
+      }
+      return r.json();
+    });
+  }
+
+  function fetchRemote(){
+    return githubFetch('/gists/' + syncState.gistId).then(function(gist){
+      var file = gist.files && gist.files[SYNC_FILE];
+      if(!file) return null;
+      if(file.truncated && file.raw_url){
+        return fetch(file.raw_url, { cache: 'no-store' }).then(function(r){ return r.json(); });
+      }
+      return JSON.parse(file.content || 'null');
+    });
+  }
+
+  function pushRemote(content){
+    var files = {};
+    files[SYNC_FILE] = { content: content };
+    return githubFetch('/gists/' + syncState.gistId, {
+      method: 'PATCH',
+      body: JSON.stringify({ files: files })
+    });
+  }
+
+  function describeSyncError(err){
+    if(err && err.status === 401) return 'GitHub rejected the token. Make sure it has the gist box ticked and hasn\'t expired.';
+    if(err && err.status === 403) return 'GitHub refused the request (rate limit or token permissions). Will try again shortly.';
+    if(err && err.status === 404) return 'The sync gist couldn\'t be found. Disconnect and connect again to recreate it.';
+    return 'Couldn\'t reach GitHub. Changes are saved on this device and will sync when you\'re back online.';
+  }
+
+  // Pull, merge, push. Never rejects. Calls made while one is running are
+  // folded into a single follow-up run.
+  function syncNow(){
+    if(!syncConfigured()) return Promise.resolve();
+    if(syncInFlight){ syncAgain = true; return syncInFlight; }
+    clearTimeout(syncPushTimer);
+    syncPushTimer = null;
+    setSyncStatus('busy', 'Syncing…');
+    syncInFlight = fetchRemote()
+      .then(function(remote){
+        mergeRemote(remote);
+        var payload = canonical(buildSyncPayload());
+        if(remote && canonical(remote) === payload) return;
+        return pushRemote(payload);
+      })
+      .then(function(){
+        syncState.lastSyncAt = Date.now();
+        saveSyncState();
+        setSyncStatus('ok', 'Synced at ' + ukTimeOf(syncState.lastSyncAt));
+      })
+      .catch(function(err){
+        setSyncStatus('error', describeSyncError(err));
+      })
+      .then(function(){
+        syncInFlight = null;
+        if(syncAgain){
+          syncAgain = false;
+          syncNow();
+        }
+      });
+    return syncInFlight;
+  }
+
+  function scheduleSyncPush(){
+    if(!syncConfigured()) return;
+    clearTimeout(syncPushTimer);
+    syncPushTimer = setTimeout(syncNow, 1500);
+  }
+
+  // First connection on a device: finds the existing sync gist on the
+  // account if there is one, otherwise creates it from this device's list.
+  function connectSync(token){
+    syncState.token = token;
+    setSyncStatus('busy', 'Connecting to GitHub…');
+    return githubFetch('/gists?per_page=100')
+      .then(function(gists){
+        var existing = (gists || []).find(function(g){ return g.files && g.files[SYNC_FILE]; });
+        if(existing) return existing.id;
+        var files = {};
+        files[SYNC_FILE] = { content: canonical(buildSyncPayload()) };
+        return githubFetch('/gists', {
+          method: 'POST',
+          body: JSON.stringify({ description: 'TV Tracker sync', public: false, files: files })
+        }).then(function(g){ return g.id; });
+      })
+      .then(function(gistId){
+        syncState.gistId = gistId;
+        saveSyncState();
+        return syncNow();
+      })
+      .catch(function(err){
+        syncState.token = null;
+        syncState.gistId = null;
+        saveSyncState();
+        setSyncStatus('error', describeSyncError(err));
+      });
+  }
+
+  function disconnectSync(){
+    syncState.token = null;
+    syncState.gistId = null;
+    syncState.lastSyncAt = null;
+    saveSyncState();
+    setSyncStatus('idle', '');
+  }
+
+  // ---- Sync panel UI ----
+  var syncBtn = document.getElementById('syncBtn');
+  var syncDot = document.getElementById('syncDot');
+  var syncBtnLabel = document.getElementById('syncBtnLabel');
+  var syncPanel = document.getElementById('syncPanel');
+  var syncSetup = document.getElementById('syncSetup');
+  var syncTokenInput = document.getElementById('syncTokenInput');
+  var syncStatusText = document.getElementById('syncStatusText');
+  var syncActionBtn = document.getElementById('syncActionBtn');
+  var syncDisconnectBtn = document.getElementById('syncDisconnectBtn');
+  var syncCloseBtn = document.getElementById('syncCloseBtn');
+
+  function setSyncStatus(state, message){
+    syncStatus = { state: state, message: message };
+    renderSyncUi();
+  }
+
+  function renderSyncUi(){
+    var connected = syncConfigured();
+    var busy = syncStatus.state === 'busy';
+    syncDot.className = 'sync-dot' + (connected || busy ? ' ' + syncStatus.state : '');
+    if(!connected && !busy){
+      syncBtnLabel.textContent = 'Set Up Sync';
+    } else if(busy){
+      syncBtnLabel.textContent = 'Syncing…';
+    } else if(syncStatus.state === 'error'){
+      syncBtnLabel.textContent = 'Sync Issue';
+    } else {
+      syncBtnLabel.textContent = 'Synced';
+    }
+
+    syncSetup.style.display = connected ? 'none' : 'block';
+    syncDisconnectBtn.style.display = connected ? '' : 'none';
+    syncActionBtn.textContent = connected ? 'Sync Now' : 'Connect';
+    syncActionBtn.disabled = busy;
+
+    var msg = syncStatus.message;
+    if(connected && !msg && syncState.lastSyncAt) msg = 'Last synced at ' + ukTimeOf(syncState.lastSyncAt);
+    if(connected && !msg) msg = 'Connected.';
+    syncStatusText.textContent = msg;
+    syncStatusText.className = 'sync-status' + (syncStatus.state === 'error' ? ' error' : '');
+    syncStatusText.style.display = msg ? 'block' : 'none';
+  }
+
+  syncBtn.addEventListener('click', function(){
+    syncPanel.classList.toggle('open');
+    renderSyncUi();
+    if(syncPanel.classList.contains('open') && !syncConfigured()) syncTokenInput.focus();
+  });
+  syncCloseBtn.addEventListener('click', function(){
+    syncPanel.classList.remove('open');
+  });
+  syncActionBtn.addEventListener('click', function(){
+    if(syncConfigured()){
+      syncNow();
+      return;
+    }
+    var token = syncTokenInput.value.trim();
+    if(!token){
+      syncTokenInput.focus();
+      return;
+    }
+    connectSync(token).then(function(){
+      if(syncConfigured()) syncTokenInput.value = '';
+    });
+  });
+  syncTokenInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') syncActionBtn.click();
+  });
+  syncDisconnectBtn.addEventListener('click', function(){
+    if(window.confirm('Stop syncing on this device? Your list stays here, it just stops updating from the other device.')){
+      disconnectSync();
+    }
+  });
+
+  // Pull whenever the app comes back to the foreground (a home-screen app on
+  // a phone usually resumes rather than reloads), when the connection comes
+  // back, and every couple of minutes while it's open.
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') syncNow();
+  });
+  window.addEventListener('online', function(){ syncNow(); });
+  setInterval(function(){
+    if(document.visibilityState === 'visible') syncNow();
+  }, SYNC_POLL_MS);
+
+  // ---- Launch ----
+  resetSyncFingerprints();
+  renderSyncUi();
+  if(syncConfigured()){
+    // Waits up to 6 seconds for the first pull before running the launch
+    // checks, so a slow connection never holds the app up for long.
+    Promise.race([syncNow(), new Promise(function(res){ setTimeout(res, 6000); })])
+      .then(runLaunchChecks);
+  } else {
+    runLaunchChecks();
+  }
+})();
+</script>
+</body>
+</html>
