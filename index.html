@@ -1480,49 +1480,58 @@
   // are known (TVMaze match), then adds whatever's been reached in the
   // current/final season. Respects a startingPointSeason/Episode exclusion
   // when the show was added starting mid-run.
-  function episodesWatchedForShow(show){
-    if(!show.started || show.upcoming) return 0;
-
-    var season, episode;
-    if(show.completed){
-      if(show.completedStatus === 'dnf'){
-        season = show.dnfSeason || 1;
-        episode = show.dnfEpisode || 0;
-      } else if(show.episodesPerSeason && show.totalSeasons){
-        // Marked finished/cancelled with TVMaze data: count the whole
-        // known run.
-        season = show.totalSeasons;
-        episode = show.episodesPerSeason[show.totalSeasons] || 0;
-      } else {
-        // Manually added as completed with no episode data \u2014 no
-        // reliable way to estimate, so this show contributes nothing.
-        return 0;
-      }
-    } else if(show.rewatchInProgress){
-      // Season/episode currently track the REWATCH's own progress (it
-      // starts back at S1E1), not the original watch-through, so the
-      // original contribution is whatever was frozen the moment this pass
-      // began. The in-progress pass itself is added in computeWatchStats.
-      return show.originalWatchEpisodeCount || 0;
-    } else {
-      season = show.season || 1;
-      episode = show.episode || 0;
-    }
-
+  // Episodes from S1E1 up to and including the given season/episode,
+  // leaving out anything before a mid-run starting point. Falls back to the
+  // current season alone when TVMaze season lengths aren't known.
+  function episodesThrough(show, season, episode){
     var startSeason = show.startingPointSeason || 1;
     var startEpisode = show.startingPointSeason ? (show.startingPointEpisode || 1) : 1;
-
+    var perSeason = show.episodesPerSeason;
     var total = 0;
-    if(show.episodesPerSeason){
+    if(perSeason){
       for(var s = startSeason; s < season; s++){
-        var seasonLen = show.episodesPerSeason[s] || 0;
-        total += (s === startSeason) ? Math.max(0, seasonLen - (startEpisode - 1)) : seasonLen;
+        var len = perSeason[s] || 0;
+        total += (s === startSeason) ? Math.max(0, len - (startEpisode - 1)) : len;
       }
-      total += (season === startSeason) ? Math.max(0, episode - (startEpisode - 1)) : episode;
-    } else {
-      total = (season === startSeason) ? Math.max(0, episode - (startEpisode - 1)) : episode;
     }
-    return total;
+    total += (season === startSeason) ? Math.max(0, episode - (startEpisode - 1)) : episode;
+    return Math.max(0, total);
+  }
+
+  // Episodes watched in the ORIGINAL watch-through of one show (rewatch
+  // passes are added separately in computeWatchStats). What the stored
+  // position means depends on the status:
+  // - Currently Watching: season/episode is the episode you're ON, so it
+  //   isn't counted yet.
+  // - Up to Date: season/episode is the last episode you watched.
+  // - Finished: the whole known run.
+  // - DNF: dnfEpisode is the episode you stopped on, unfinished. A DNF made
+  //   from Up to Date has no episode and means that whole season was seen.
+  function episodesWatchedForShow(show){
+    if(!show.started || show.upcoming) return 0;
+    var perSeason = show.episodesPerSeason;
+
+    if(show.completed){
+      if(show.completedStatus === 'dnf'){
+        var ds = show.dnfSeason || 1;
+        if(show.dnfEpisode === null || typeof show.dnfEpisode === 'undefined'){
+          return episodesThrough(show, ds, (perSeason && perSeason[ds]) || 0);
+        }
+        return episodesThrough(show, ds, show.dnfEpisode - 1);
+      }
+      // Added straight to Completed with no TVMaze data: nothing to go on.
+      if(!perSeason || !show.totalSeasons) return 0;
+      return episodesThrough(show, show.totalSeasons, perSeason[show.totalSeasons] || 0);
+    }
+
+    if(show.rewatchInProgress){
+      // Season/episode track the rewatch's own progress here, so the
+      // original contribution is what was frozen when the pass began.
+      return show.originalWatchEpisodeCount || 0;
+    }
+
+    var season = show.season || 1, episode = show.episode || 1;
+    return episodesThrough(show, season, show.caughtUp ? episode : episode - 1);
   }
 
   // Episodes contributed by rewatches: every completed pass's recorded
@@ -1534,8 +1543,8 @@
       for(var i = 0; i < show.rewatchPassCounts.length; i++) total += show.rewatchPassCounts[i] || 0;
     }
     if(show.rewatchInProgress){
-      var season = show.season || 1, episode = show.episode || 0;
-      var soFar = episode;
+      var season = show.season || 1, episode = show.episode || 1;
+      var soFar = episode - 1;
       if(show.episodesPerSeason){
         for(var s = 1; s < season; s++) soFar += show.episodesPerSeason[s] || 0;
       }
@@ -1994,8 +2003,10 @@
   // logic (which would otherwise also fire on the same episode change).
   function checkRewatchCompletion(show){
     if(!show.rewatchInProgress) return false;
+    // show.episode is already the NEXT episode here, so the pass is done once
+    // it has moved past the frontier episode, not when it lands on it.
     var reachedFrontier = (show.season > show.rewatchFrontierSeason) ||
-      (show.season === show.rewatchFrontierSeason && show.episode >= show.rewatchFrontierEpisode);
+      (show.season === show.rewatchFrontierSeason && show.episode > show.rewatchFrontierEpisode);
     if(!reachedFrontier) return false;
 
     var passEpisodes = show.rewatchFrontierEpisode;
@@ -2052,7 +2063,7 @@
       // No air dates on this device yet (e.g. the show arrived via sync and
       // its schedule hasn't been fetched): fetch it now, and the refresh
       // settles the show once it knows the next episode isn't out.
-      if(show.tvmazeId && !show.episodeAirInfo) refreshTvMazeDataOnLaunch(true);
+      if(show.tvmazeId && !show.episodeAirInfo) refreshShowFromTvMaze(show);
       return;
     }
 
@@ -2215,8 +2226,23 @@
     }
     show.completed = true;
     show.completedStatus = 'dnf';
-    show.dnfSeason = show.season || 1;
-    show.dnfEpisode = show.caughtUp ? null : (show.episode || 1);
+    if(show.caughtUp){
+      // Up to Date holds the last episode watched, so the DNF point is the
+      // next one (the same meaning as stopping from Currently Watching).
+      var next = computeResumePoint(show);
+      show.dnfSeason = next.season;
+      show.dnfEpisode = next.episode;
+      show.season = next.season;
+      show.episode = next.episode;
+      show.caughtUp = false;
+      show.resumeSeason = null;
+      show.resumeEpisode = null;
+      show.nextSeasonDate = null;
+      delete pendingDateEntry[show.id];
+    } else {
+      show.dnfSeason = show.season || 1;
+      show.dnfEpisode = show.episode || 1;
+    }
     saveShows();
     render();
   }
@@ -3082,7 +3108,8 @@
         totalSeasons: show.totalSeasons,
         episodeAirDates: show.episodeAirDates || {},
         episodeAirInfo: show.episodeAirInfo || null,
-        network: show.network || null
+        network: show.network || null,
+        avgRuntimeMinutes: show.avgRuntimeMinutes || null
       };
       showLookupMatch(show.title, '', show.showStatus || 'unknown status', show.episodesPerSeason, show.totalSeasons);
     }
@@ -3106,6 +3133,26 @@
     });
   });
 
+  // A season or episode TVMaze doesn't list leaves the show with no episode
+  // count for that season, which hides Mark As Watched for good. Catch it
+  // at save time instead.
+  function positionProblem(status){
+    if(!pendingLookup || !pendingLookup.episodesPerSeason) return null;
+    if(status !== 'watching' && status !== 'upToDate' && status !== 'dnf') return null;
+    var season = Math.max(1, parseInt(seasonInput.value, 10) || 1);
+    var episode = Math.max(1, parseInt(episodeInput.value, 10) || 1);
+    var total = pendingLookup.totalSeasons;
+    var seasonLen = pendingLookup.episodesPerSeason[season];
+    if(!seasonLen){
+      return 'TVMaze only lists ' + total + (total === 1 ? ' season' : ' seasons') +
+        ' for this show, so there is no season ' + season + '. The latest is season ' + total + '.';
+    }
+    if(episode > seasonLen){
+      return 'Season ' + season + ' only has ' + seasonLen + (seasonLen === 1 ? ' episode' : ' episodes') + ' on TVMaze.';
+    }
+    return null;
+  }
+
   submitAddBtn.addEventListener('click', function(){
     var title = titleInput.value.trim();
     if(!title){
@@ -3118,6 +3165,12 @@
       return;
     }
     var status = getSelectedStatus();
+    var problem = positionProblem(status);
+    if(problem){
+      lookupStatus.textContent = problem;
+      seasonInput.focus();
+      return;
+    }
 
     if(editingShow){
       editingShow.title = title;
@@ -3214,6 +3267,8 @@
       }
       settleUpToDateAgainstShowStatus(editingShow, true);
       autofillNextSeasonDate(editingShow);
+      applyDropRules(editingShow);
+      settleIfNextNotOut(editingShow);
       saveShows();
       addPanel.classList.remove('open');
       resetForm();
@@ -3427,6 +3482,11 @@
         startingPointEpisode: hasCustomStart ? addEpisode : null
       });
     }
+    if(status === 'watching'){
+      var justAdded = shows[shows.length - 1];
+      applyDropRules(justAdded);
+      settleIfNextNotOut(justAdded);
+    }
     saveShows();
     addPanel.classList.remove('open');
     resetForm();
@@ -3456,49 +3516,28 @@
   // in, the redraw is skipped; the data is still saved underneath, and the
   // view catches up as soon as that entry is finished or cancelled.
   function scheduleUiRefresh(){
-    if(Object.keys(pendingDateEntry).length) return;
+    var active = document.activeElement;
+    if(active && active.tagName === 'INPUT' && active.type === 'date' && active.closest('#shelves')) return;
+    // An air-date entry that was opened and then abandoned is dropped here,
+    // otherwise it would keep reopening the picker on every redraw.
+    Object.keys(pendingDateEntry).forEach(function(id){
+      var s = shows.find(function(x){ return x.id === id; });
+      if(!s || !s.nextSeasonDate) delete pendingDateEntry[id];
+    });
     render();
   }
 
-  var tvMazeRefreshInProgress = false;
-  var tvMazeRefreshQueued = false;
-  // onlyMissing = true refreshes just the shows with no schedule data yet,
-  // which is what a show arriving from the other device via sync looks like
-  // (the heavy per-episode data is left out of the sync file and rebuilt
-  // here from TVMaze instead).
-  function refreshTvMazeDataOnLaunch(onlyMissing){
-    // Launch-only now (no periodic or tab-refocus re-fetch -- see the
-    // note further down where the old setInterval/visibilitychange calls
-    // used to live). Skips starting a second pass on top of one still in
-    // progress, though with no recurring trigger left that's mostly a
-    // safety net now rather than something that fires often.
-    if(tvMazeRefreshInProgress){
-      if(onlyMissing) tvMazeRefreshQueued = true;
-      return;
-    }
-    tvMazeRefreshInProgress = true;
-
-    // Finished-completed shows are now refreshed too (so a renewal can be
-    // detected), but a DNF'd show never is \u2014 the person deliberately
-    // stopped watching it, so its schedule shouldn't even be checked.
-    var toRefresh = shows.filter(function(s){
-      return s.tvmazeId && !(s.completed && s.completedStatus === 'dnf') &&
-        (!onlyMissing || !s.episodeAirInfo);
-    });
-    var i = 0;
-
-    function refreshNext(){
-      if(i >= toRefresh.length){
-        tvMazeRefreshInProgress = false;
-        if(tvMazeRefreshQueued){
-          tvMazeRefreshQueued = false;
-          refreshTvMazeDataOnLaunch(true);
-        }
-        return;
-      }
-      var show = toRefresh[i];
-      i++;
-
+  // Fetches one show's TVMaze data and applies it: new episode counts and
+  // drop times, renewals, Ended/TBD shows leaving Up to Date, and a show in
+  // Currently Watching whose next episode isn't out moving to Up to Date.
+  // Concurrent calls for the same show share one request. Used by the
+  // launch sweep and directly by Mark As Watched when a show has no
+  // schedule on this device yet, so that never waits behind a full sweep.
+  var tvMazeShowFetches = {};
+  function refreshShowFromTvMaze(show){
+    if(!show || !show.tvmazeId) return Promise.resolve();
+    if(tvMazeShowFetches[show.id]) return tvMazeShowFetches[show.id];
+    var p = (function(){
       var oldStatus = show.showStatus;
       var wasCompletedFinished = show.completed && show.completedStatus === 'finished';
       var wasCaughtUp = show.caughtUp;
@@ -3508,7 +3547,7 @@
       var priorTotalSeasons = show.totalSeasons;
       var priorPerSeason = show.episodesPerSeason;
 
-      fetch('https://api.tvmaze.com/shows/' + show.tvmazeId + '?embed=episodes')
+      return fetch('https://api.tvmaze.com/shows/' + show.tvmazeId + '?embed=episodes')
         .then(function(r){ return r.ok ? r.json() : null; })
         .then(function(data){
           if(!data) return;
@@ -3602,13 +3641,53 @@
 
           saveShows(true);
           scheduleUiRefresh();
-        })
-        .catch(function(){
-          // Offline or TVMaze unreachable; just skip refreshing this show.
-        })
-        .then(function(){
-          setTimeout(refreshNext, 350);
         });
+    })().catch(function(){}).then(function(){ delete tvMazeShowFetches[show.id]; });
+    tvMazeShowFetches[show.id] = p;
+    return p;
+  }
+
+  var tvMazeRefreshInProgress = false;
+  var tvMazeRefreshQueued = false;
+  // onlyMissing = true refreshes just the shows with no schedule data yet,
+  // which is what a show arriving from the other device via sync looks like
+  // (the heavy per-episode data is left out of the sync file and rebuilt
+  // here from TVMaze instead).
+  function refreshTvMazeDataOnLaunch(onlyMissing){
+    // Launch-only now (no periodic or tab-refocus re-fetch -- see the
+    // note further down where the old setInterval/visibilitychange calls
+    // used to live). Skips starting a second pass on top of one still in
+    // progress, though with no recurring trigger left that's mostly a
+    // safety net now rather than something that fires often.
+    if(tvMazeRefreshInProgress){
+      if(onlyMissing) tvMazeRefreshQueued = true;
+      return;
+    }
+    tvMazeRefreshInProgress = true;
+
+    // Finished-completed shows are now refreshed too (so a renewal can be
+    // detected), but a DNF'd show never is \u2014 the person deliberately
+    // stopped watching it, so its schedule shouldn't even be checked.
+    var toRefresh = shows.filter(function(s){
+      return s.tvmazeId && !(s.completed && s.completedStatus === 'dnf') &&
+        (!onlyMissing || !s.episodeAirInfo);
+    });
+    var i = 0;
+
+    function refreshNext(){
+      if(i >= toRefresh.length){
+        tvMazeRefreshInProgress = false;
+        if(tvMazeRefreshQueued){
+          tvMazeRefreshQueued = false;
+          refreshTvMazeDataOnLaunch(true);
+        }
+        return;
+      }
+      var show = toRefresh[i];
+      i++;
+
+      var done = function(){ setTimeout(refreshNext, 350); };
+      refreshShowFromTvMaze(show).then(done, done);
     }
 
     refreshNext();
